@@ -1,15 +1,21 @@
 import { Link } from "@tanstack/react-router";
 import { NAV_LINKS, EMAIL, WHATSAPP_URL } from "@/lib/site";
 import willpower from "@/assets/willpower-mark.png.asset.json";
+import wordmark from "@/assets/glinkit-logo.png.asset.json";
 
 export function Footer() {
   return (
     <footer className="border-t border-border/70">
       <div className="mx-auto flex max-w-6xl flex-col gap-6 px-5 py-10 sm:flex-row sm:items-start sm:justify-between">
         <div className="max-w-sm">
-          <p className="font-display text-lg font-bold">
-            glinkit<span className="text-primary">.</span>
-          </p>
+          <img
+            src={wordmark.url}
+            alt="Glinkit"
+            width={1120}
+            height={400}
+            loading="lazy"
+            className="h-8 w-auto rounded-md"
+          />
           <p className="mt-2 text-sm text-muted-foreground">
             Smart digital business cards for corporates and startups. Built in India, shared
             worldwide.
