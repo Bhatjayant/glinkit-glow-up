@@ -1,10 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Check, QrCode } from "lucide-react";
+import { Check, MessageCircle, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Section, Eyebrow, SectionTitle } from "@/components/site/Section";
 import { AUDIENCES, FEATURES, STEPS } from "@/lib/content";
 import { WHATSAPP_URL } from "@/lib/site";
-import heroCard from "@/assets/hero-card.jpg";
+import lockup from "@/assets/glinkit-lockup.jpg.asset.json";
 
 const title = "Glinkit — Smart Digital Business Cards for Teams";
 const description =
@@ -26,55 +26,67 @@ function Index() {
   return (
     <>
       {/* Hero */}
-      <div className="glow-emerald border-b border-border/70">
-        <div className="mx-auto grid max-w-6xl items-center gap-10 px-5 py-16 sm:py-24 lg:grid-cols-[1.05fr_0.95fr]">
-          <div>
-            <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-              <QrCode className="h-3.5 w-3.5" /> Trusted by teams across India
-            </span>
-            <h1 className="mt-5 text-4xl leading-[1.05] font-bold sm:text-5xl lg:text-6xl">
-              Your first impression,{" "}
-              <span className="text-gold-gradient">engineered to convert</span>
+      <div className="glow-emerald relative overflow-hidden border-b border-border/70">
+        <div className="pointer-events-none absolute -top-40 left-1/2 h-96 w-[46rem] -translate-x-1/2 rounded-full bg-primary/10 blur-3xl" />
+        <div className="relative mx-auto max-w-6xl px-5 py-16 sm:py-24">
+          <div className="mx-auto max-w-3xl text-center">
+            <img
+              src={lockup.url}
+              alt="Glinkit — Endless Opportunities. www.glinkit.com"
+              width={1536}
+              height={1024}
+              className="mx-auto w-full max-w-xl rounded-3xl border border-primary/20 shadow-[var(--shadow-elegant)]"
+            />
+            <h1 className="mt-10 text-4xl leading-[1.05] font-bold sm:text-5xl lg:text-6xl">
+              Smart digital business cards,{" "}
+              <span className="text-gold-gradient">set up over WhatsApp</span>
             </h1>
-            <p className="mt-5 max-w-xl text-base text-muted-foreground sm:text-lg">
-              Glinkit turns your business card into a living profile — call, WhatsApp, navigate,
-              pay and capture leads in one tap. Built for corporates rolling out to teams and
-              startups that need to look established today.
+            <p className="mx-auto mt-5 max-w-2xl text-base text-muted-foreground sm:text-lg">
+              No app, no forms, no reprints. Send us one WhatsApp message and your team goes live
+              with cards that call, chat, navigate, pay and capture leads in a single tap.
             </p>
-            <div className="mt-8 flex flex-wrap gap-3">
+            <div className="mt-8 flex flex-wrap justify-center gap-3">
               <Button variant="gold" size="xl" asChild>
                 <a href={WHATSAPP_URL} target="_blank" rel="noreferrer">
-                  Create your card
+                  <MessageCircle className="h-5 w-5" /> Start on WhatsApp
                 </a>
               </Button>
               <Button variant="goldOutline" size="xl" asChild>
-                <Link to="/features">See what it does</Link>
+                <Link to="/contact">Send an enquiry</Link>
               </Button>
             </div>
-            <dl className="mt-10 grid max-w-lg grid-cols-3 gap-4">
-              {[
-                ["2 min", "to go live"],
-                ["0", "reprints needed"],
-                ["∞", "shares & updates"],
-              ].map(([k, v]) => (
-                <div key={v}>
-                  <dt className="font-display text-2xl font-bold text-primary">{k}</dt>
-                  <dd className="text-xs text-muted-foreground">{v}</dd>
-                </div>
-              ))}
-            </dl>
           </div>
 
-          <div className="relative">
-            <div className="absolute -inset-6 rounded-[2.5rem] bg-primary/10 blur-3xl" />
-            <img
-              src={heroCard}
-              alt="A digital business card open on a smartphone showing call, email and save-contact actions"
-              width={1200}
-              height={1408}
-              className="relative mx-auto w-full max-w-md rounded-3xl border border-primary/20 object-cover shadow-[var(--shadow-elegant)]"
-            />
-          </div>
+          <ol className="mx-auto mt-14 grid max-w-4xl gap-4 sm:grid-cols-3">
+            {[
+              ["Message us", "Tap the WhatsApp button — the message is pre-filled."],
+              ["Share details", "Send your name, role, logo and links in the chat."],
+              ["Go live", "Your card link and QR arrive back on WhatsApp."],
+            ].map(([t, d], i) => (
+              <li key={t} className="surface-panel rounded-2xl p-5 text-left">
+                <span className="font-display text-sm font-bold text-primary">0{i + 1}</span>
+                <h2 className="mt-2 font-display text-base font-semibold">{t}</h2>
+                <p className="mt-1.5 text-sm text-muted-foreground">{d}</p>
+              </li>
+            ))}
+          </ol>
+
+          <dl className="mx-auto mt-12 grid max-w-2xl grid-cols-3 gap-4 text-center">
+            {[
+              ["2 min", "to go live"],
+              ["0", "reprints needed"],
+              ["∞", "shares & updates"],
+            ].map(([k, v]) => (
+              <div key={v}>
+                <dt className="font-display text-2xl font-bold text-primary">{k}</dt>
+                <dd className="text-xs text-muted-foreground">{v}</dd>
+              </div>
+            ))}
+          </dl>
+          <p className="mt-8 flex items-center justify-center gap-2 text-xs text-muted-foreground">
+            <Sparkles className="h-3.5 w-3.5 text-primary" /> Trusted by teams across Pune, Thane
+            and Hubballi
+          </p>
         </div>
       </div>
 
