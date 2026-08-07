@@ -66,6 +66,13 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
+@theme inline {
+  --color-gold: var(--gold);
+  --color-gold-bright: var(--gold-bright);
+  --color-gold-deep: var(--gold-deep);
+  --color-surface: var(--surface);
+}
+
 :root {
   --radius: 0.75rem;
 
@@ -162,5 +169,46 @@
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
   }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
+}
+
+@utility text-gold-gradient {
+  background: var(--gradient-gold);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@utility surface-panel {
+  background: linear-gradient(
+    180deg,
+    color-mix(in oklab, var(--card) 92%, transparent),
+    color-mix(in oklab, var(--background) 88%, transparent)
+  );
+  border: 1px solid color-mix(in oklab, var(--gold) 16%, var(--border));
+  box-shadow: var(--shadow-elegant);
+}
+
+@utility gold-hairline {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in oklab, var(--gold) 60%, transparent),
+    transparent
+  );
+}
+
+@utility glow-emerald {
+  background: var(--gradient-emerald);
 }
