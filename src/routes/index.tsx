@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Check, QrCode } from "lucide-react";
+import { Check, Gift, QrCode } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Section, Eyebrow, SectionTitle } from "@/components/site/Section";
+import { RotatingHeadline } from "@/components/site/RotatingHeadline";
 import { AUDIENCES, FEATURES, STEPS } from "@/lib/content";
 import { WHATSAPP_URL } from "@/lib/site";
 import heroCard from "@/assets/hero-card.jpg";
@@ -32,19 +33,23 @@ function Index() {
             <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
               <QrCode className="h-3.5 w-3.5" /> Trusted by teams across India
             </span>
-            <h1 className="mt-5 text-4xl leading-[1.05] font-bold sm:text-5xl lg:text-6xl">
-              Your first impression,{" "}
-              <span className="text-gold-gradient">engineered to convert</span>
-            </h1>
+            <RotatingHeadline />
             <p className="mt-5 max-w-xl text-base text-muted-foreground sm:text-lg">
               Glinkit turns your business card into a living profile — call, WhatsApp, navigate,
               pay and capture leads in one tap. Built for corporates rolling out to teams and
               startups that need to look established today.
             </p>
+            <p className="mt-5 inline-flex items-start gap-2 rounded-xl border border-primary/30 bg-primary/10 px-3.5 py-2.5 text-sm font-medium text-primary">
+              <Gift className="mt-0.5 h-4 w-4 shrink-0" />
+              <span>
+                New customer offer: <span className="font-semibold">free usage for 3 months</span>{" "}
+                — no card, no commitment.
+              </span>
+            </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Button variant="gold" size="xl" asChild>
                 <a href={WHATSAPP_URL} target="_blank" rel="noreferrer">
-                  Create your card
+                  Claim 3 months free
                 </a>
               </Button>
               <Button variant="goldOutline" size="xl" asChild>
