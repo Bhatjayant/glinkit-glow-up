@@ -3,16 +3,18 @@ import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { NAV_LINKS, WHATSAPP_URL } from "@/lib/site";
+import wordmark from "@/assets/glinkit-logo.png.asset.json";
 
 function Wordmark() {
   return (
-    <Link to="/" className="flex min-w-0 items-center gap-2">
-      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[image:var(--gradient-gold)] font-display text-base font-bold text-primary-foreground">
-        g
-      </span>
-      <span className="truncate font-display text-lg font-bold tracking-tight">
-        glinkit<span className="text-primary">.</span>
-      </span>
+    <Link to="/" className="flex min-w-0 items-center" aria-label="Glinkit home">
+      <img
+        src={wordmark.url}
+        alt="Glinkit"
+        width={1120}
+        height={400}
+        className="h-8 w-auto shrink-0 rounded-md sm:h-9"
+      />
     </Link>
   );
 }

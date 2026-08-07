@@ -1,12 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { Mail, MessageCircle, Phone } from "lucide-react";
+import { Mail, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Section, Eyebrow, SectionTitle } from "@/components/site/Section";
-import { EMAIL, PHONE, PHONE_DISPLAY } from "@/lib/site";
+import { EMAIL, WHATSAPP_URL } from "@/lib/site";
 
 const title = "Contact Glinkit — Get Your Digital Card Demo";
 const description =
@@ -45,16 +45,6 @@ function ContactPage() {
       <div className="mt-10 grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
         <div className="grid gap-3">
           <a
-            href={`tel:${PHONE}`}
-            className="surface-panel flex items-center gap-4 rounded-2xl p-5 transition-colors hover:border-primary/40"
-          >
-            <Phone className="h-5 w-5 shrink-0 text-primary" />
-            <span className="min-w-0">
-              <span className="block text-xs text-muted-foreground">Call us</span>
-              <span className="block truncate font-display font-semibold">{PHONE_DISPLAY}</span>
-            </span>
-          </a>
-          <a
             href={`mailto:${EMAIL}`}
             className="surface-panel flex items-center gap-4 rounded-2xl p-5 transition-colors hover:border-primary/40"
           >
@@ -64,12 +54,21 @@ function ContactPage() {
               <span className="block truncate font-display font-semibold">{EMAIL}</span>
             </span>
           </a>
-          <div className="surface-panel flex items-center gap-4 rounded-2xl p-5">
+          <a
+            href={WHATSAPP_URL}
+            target="_blank"
+            rel="noreferrer"
+            className="surface-panel flex items-center gap-4 rounded-2xl p-5 transition-colors hover:border-primary/40"
+          >
             <MessageCircle className="h-5 w-5 shrink-0 text-primary" />
             <span className="min-w-0">
               <span className="block text-xs text-muted-foreground">WhatsApp</span>
               <span className="block font-display font-semibold">Fastest response</span>
             </span>
+          </a>
+          <div className="surface-panel rounded-2xl p-5 text-sm">
+            <span className="block text-xs text-muted-foreground">Our offices</span>
+            <span className="block font-display font-semibold">Pune | Thane | Hubballi</span>
           </div>
         </div>
 

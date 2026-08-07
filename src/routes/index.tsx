@@ -1,9 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Check, Phone, QrCode } from "lucide-react";
+import { Check, QrCode } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Section, Eyebrow, SectionTitle } from "@/components/site/Section";
 import { AUDIENCES, FEATURES, STEPS } from "@/lib/content";
-import { PHONE, PHONE_DISPLAY, WHATSAPP_URL } from "@/lib/site";
+import { WHATSAPP_URL } from "@/lib/site";
 import heroCard from "@/assets/hero-card.jpg";
 
 const title = "Glinkit — Smart Digital Business Cards for Teams";
@@ -48,9 +48,7 @@ function Index() {
                 </a>
               </Button>
               <Button variant="goldOutline" size="xl" asChild>
-                <a href={`tel:${PHONE}`}>
-                  <Phone /> {PHONE_DISPLAY}
-                </a>
+                <Link to="/features">See what it does</Link>
               </Button>
             </div>
             <dl className="mt-10 grid max-w-lg grid-cols-3 gap-4">
