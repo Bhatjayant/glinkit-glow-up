@@ -243,6 +243,83 @@
     var(--shadow-gold);
 }
 
+/* --- Motion: mild auto blink + simmer on every box --- */
+@keyframes mild-blink {
+  0%,
+  100% {
+    opacity: 0.16;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes mild-sheen {
+  0% {
+    transform: translateX(-120%);
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.5;
+  }
+  55% {
+    opacity: 0.5;
+  }
+  100% {
+    transform: translateX(120%);
+    opacity: 0;
+  }
+}
+
+.reveal {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+/* soft gold edge that gently blinks */
+.reveal::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--gold) 40%, transparent);
+  animation: mild-blink 5.5s ease-in-out infinite;
+}
+
+/* faint sheen that simmers across the box */
+.reveal::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 45%;
+  pointer-events: none;
+  z-index: 0;
+  background: linear-gradient(
+    100deg,
+    transparent,
+    color-mix(in oklab, var(--gold) 14%, transparent),
+    transparent
+  );
+  animation: mild-sheen 7s ease-in-out infinite;
+}
+
+.reveal:nth-child(2n)::before,
+.reveal:nth-child(2n)::after {
+  animation-delay: 1.1s;
+}
+.reveal:nth-child(3n)::before,
+.reveal:nth-child(3n)::after {
+  animation-delay: 2.3s;
+}
+.reveal:nth-child(4n)::before,
+.reveal:nth-child(4n)::after {
+  animation-delay: 3.4s;
+}
+
 /* --- Motion: WhatsApp bubble + floating offer --- */
 @keyframes simmer {
   0%,
@@ -316,7 +393,12 @@
   .animate-simmer,
   .animate-bubble-ring,
   .animate-float-bob,
-  .offer-bubble {
+  .offer-bubble,
+  .reveal::before,
+  .reveal::after {
     animation: none !important;
+  }
+  .reveal::after {
+    display: none;
   }
 }
