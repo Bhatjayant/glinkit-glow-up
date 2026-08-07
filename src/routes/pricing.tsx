@@ -3,7 +3,7 @@ import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Section, Eyebrow, SectionTitle } from "@/components/site/Section";
 import { PLAN_INCLUDES } from "@/lib/content";
-import { PHONE, PHONE_DISPLAY, WHATSAPP_URL } from "@/lib/site";
+import { WHATSAPP_URL } from "@/lib/site";
 
 const title = "Pricing — Glinkit Digital Business Cards";
 const description =
@@ -75,7 +75,9 @@ function PricingPage() {
               Sell Glinkit cards in your city with our templates, dashboard and support behind you.
             </p>
             <Button variant="goldOutline" className="mt-5" asChild>
-              <a href={`tel:${PHONE}`}>Call {PHONE_DISPLAY}</a>
+              <a href={WHATSAPP_URL} target="_blank" rel="noreferrer">
+                Talk on WhatsApp
+              </a>
             </Button>
           </article>
         </div>

@@ -3,16 +3,19 @@ import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { NAV_LINKS, WHATSAPP_URL } from "@/lib/site";
+import wordmark from "@/assets/glinkit-wordmark.png.asset.json";
 
 function Wordmark() {
   return (
-    <Link to="/" className="flex min-w-0 items-center gap-2">
-      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[image:var(--gradient-gold)] font-display text-base font-bold text-primary-foreground">
-        g
-      </span>
-      <span className="truncate font-display text-lg font-bold tracking-tight">
-        glinkit<span className="text-primary">.</span>
-      </span>
+    <Link to="/" className="flex min-w-0 items-center" aria-label="Glinkit home">
+      <img
+        src={wordmark.url}
+        alt="Glinkit — Endless Opportunities"
+        width={1536}
+        height={1024}
+        className="h-9 w-auto shrink-0 rounded-md object-cover object-center sm:h-10"
+        style={{ objectPosition: "center 42%", aspectRatio: "3.2 / 1" }}
+      />
     </Link>
   );
 }
