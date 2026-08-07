@@ -3,18 +3,17 @@ import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { NAV_LINKS, WHATSAPP_URL } from "@/lib/site";
-import wordmark from "@/assets/glinkit-wordmark.png.asset.json";
+import wordmark from "@/assets/glinkit-logo.png.asset.json";
 
 function Wordmark() {
   return (
     <Link to="/" className="flex min-w-0 items-center" aria-label="Glinkit home">
       <img
         src={wordmark.url}
-        alt="Glinkit — Endless Opportunities"
-        width={1536}
-        height={1024}
-        className="h-9 w-auto shrink-0 rounded-md object-cover object-center sm:h-10"
-        style={{ objectPosition: "center 42%", aspectRatio: "3.2 / 1" }}
+        alt="Glinkit"
+        width={1120}
+        height={400}
+        className="h-8 w-auto shrink-0 rounded-md sm:h-9"
       />
     </Link>
   );
