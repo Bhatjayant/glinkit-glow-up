@@ -30,7 +30,7 @@ function PricingPage() {
       </SectionTitle>
 
       <div className="mt-10 grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
-        <article className="surface-panel rounded-3xl p-8">
+        <article className="surface-panel reveal rounded-3xl p-8">
           <div className="flex items-baseline justify-between gap-4">
             <h3 className="font-display text-xl font-bold">Glinkit Pro card</h3>
             <span className="rounded-full border border-primary/40 px-3 py-1 text-xs text-primary">
@@ -57,7 +57,7 @@ function PricingPage() {
         </article>
 
         <div className="grid gap-4">
-          <article className="surface-panel rounded-3xl p-7">
+          <article className="surface-panel reveal rounded-3xl p-7">
             <h3 className="font-display text-lg font-bold">Corporate rollout</h3>
             <p className="mt-2 text-sm text-muted-foreground">
               Brand-locked templates, bulk onboarding for your whole team and central control when
@@ -69,7 +69,7 @@ function PricingPage() {
               </a>
             </Button>
           </article>
-          <article className="surface-panel rounded-3xl p-7">
+          <article className="surface-panel reveal rounded-3xl p-7">
             <h3 className="font-display text-lg font-bold">Franchise & reseller</h3>
             <p className="mt-2 text-sm text-muted-foreground">
               Sell Glinkit cards in your city with our templates, dashboard and support behind you.

@@ -47,7 +47,7 @@ function AboutPage() {
           <SectionTitle>How we onboard you</SectionTitle>
           <div className="mt-8 grid gap-4 md:grid-cols-3">
             {STEPS.map((s) => (
-              <article key={s.n} className="rounded-2xl border border-border p-6">
+              <article key={s.n} className="reveal rounded-2xl border border-border p-6">
                 <span className="font-display text-3xl font-bold text-primary/70">{s.n}</span>
                 <h3 className="mt-3 font-display text-lg font-semibold">{s.title}</h3>
                 <p className="mt-2 text-sm text-muted-foreground">{s.desc}</p>
