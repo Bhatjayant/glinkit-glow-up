@@ -91,7 +91,7 @@ function Index() {
         </SectionTitle>
         <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {FEATURES.slice(0, 9).map((f) => (
-            <article key={f.title} className="surface-panel rounded-2xl p-5">
+            <article key={f.title} className="surface-panel reveal rounded-2xl p-5">
               <h3 className="font-display text-base font-semibold">{f.title}</h3>
               <p className="mt-2 text-sm text-muted-foreground">{f.desc}</p>
             </article>
@@ -108,7 +108,7 @@ function Index() {
       <Section className="pt-0">
         <div className="grid gap-4 lg:grid-cols-2">
           {AUDIENCES.map((a) => (
-            <article key={a.title} className="surface-panel rounded-3xl p-7">
+            <article key={a.title} className="surface-panel reveal rounded-3xl p-7">
               <h3 className="font-display text-xl font-bold">{a.title}</h3>
               <p className="mt-3 text-sm text-muted-foreground">{a.desc}</p>
               <ul className="mt-5 space-y-2">
@@ -133,7 +133,7 @@ function Index() {
           </SectionTitle>
           <div className="mt-10 grid gap-4 md:grid-cols-3">
             {STEPS.map((s) => (
-              <article key={s.n} className="rounded-2xl border border-border p-6">
+              <article key={s.n} className="reveal rounded-2xl border border-border p-6">
                 <span className="font-display text-3xl font-bold text-primary/70">{s.n}</span>
                 <h3 className="mt-3 font-display text-lg font-semibold">{s.title}</h3>
                 <p className="mt-2 text-sm text-muted-foreground">{s.desc}</p>
@@ -145,7 +145,7 @@ function Index() {
 
       {/* CTA */}
       <Section>
-        <div className="surface-panel flex flex-col items-start gap-6 rounded-3xl p-8 sm:p-12 lg:flex-row lg:items-center lg:justify-between">
+        <div className="surface-panel reveal flex flex-col items-start gap-6 rounded-3xl p-8 sm:p-12 lg:flex-row lg:items-center lg:justify-between">
           <div className="max-w-xl">
             <h2 className="text-2xl font-bold sm:text-3xl">Ready to retire the paper card?</h2>
             <p className="mt-3 text-sm text-muted-foreground">

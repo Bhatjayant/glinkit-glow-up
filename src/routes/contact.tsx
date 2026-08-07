@@ -46,7 +46,7 @@ function ContactPage() {
         <div className="grid gap-3">
           <a
             href={`mailto:${EMAIL}`}
-            className="surface-panel flex items-center gap-4 rounded-2xl p-5 transition-colors hover:border-primary/40"
+            className="surface-panel reveal flex items-center gap-4 rounded-2xl p-5"
           >
             <Mail className="h-5 w-5 shrink-0 text-primary" />
             <span className="min-w-0">
@@ -58,7 +58,7 @@ function ContactPage() {
             href={WHATSAPP_URL}
             target="_blank"
             rel="noreferrer"
-            className="surface-panel flex items-center gap-4 rounded-2xl p-5 transition-colors hover:border-primary/40"
+            className="surface-panel reveal flex items-center gap-4 rounded-2xl p-5"
           >
             <MessageCircle className="h-5 w-5 shrink-0 text-primary" />
             <span className="min-w-0">
@@ -66,14 +66,14 @@ function ContactPage() {
               <span className="block font-display font-semibold">Fastest response</span>
             </span>
           </a>
-          <div className="surface-panel rounded-2xl p-5 text-sm">
+          <div className="surface-panel reveal rounded-2xl p-5 text-sm">
             <span className="block text-xs text-muted-foreground">Our offices</span>
             <span className="block font-display font-semibold">Pune | Thane | Hubballi</span>
           </div>
         </div>
 
         <form
-          className="surface-panel rounded-3xl p-6 sm:p-8"
+          className="surface-panel reveal rounded-3xl p-6 sm:p-8"
           onSubmit={(e) => {
             e.preventDefault();
             window.open(waLink, "_blank", "noopener");

@@ -212,3 +212,111 @@
 @utility glow-emerald {
   background: var(--gradient-emerald);
 }
+
+/* --- Motion: scroll reveal for boxes/cards --- */
+@keyframes reveal-in {
+  from {
+    opacity: 0;
+    transform: translateY(26px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@utility reveal {
+  animation: reveal-in 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  animation-timeline: view();
+  animation-range: entry 2% cover 26%;
+  transition:
+    transform 0.35s ease,
+    box-shadow 0.35s ease,
+    border-color 0.35s ease;
+}
+
+.reveal:hover {
+  transform: translateY(-5px);
+  border-color: color-mix(in oklab, var(--gold) 45%, transparent);
+  box-shadow:
+    var(--shadow-elegant),
+    var(--shadow-gold);
+}
+
+/* --- Motion: WhatsApp bubble + floating offer --- */
+@keyframes simmer {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-4px) scale(1.06);
+  }
+}
+
+@keyframes bubble-ring {
+  0% {
+    transform: scale(0.9);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(1.85);
+    opacity: 0;
+  }
+}
+
+@keyframes float-bob {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-0.6deg);
+  }
+  50% {
+    transform: translateY(-7px) rotate(0.6deg);
+  }
+}
+
+@keyframes gold-shimmer {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+@utility animate-simmer {
+  animation: simmer 2.2s ease-in-out infinite;
+}
+
+@utility animate-bubble-ring {
+  animation: bubble-ring 2.2s ease-out infinite;
+}
+
+@utility animate-float-bob {
+  animation: float-bob 3.4s ease-in-out infinite;
+}
+
+@utility offer-bubble {
+  background: linear-gradient(
+    100deg,
+    var(--gold-deep),
+    var(--gold),
+    var(--gold-bright),
+    var(--gold),
+    var(--gold-deep)
+  );
+  background-size: 200% 100%;
+  animation: gold-shimmer 4s linear infinite;
+  color: oklch(0.19 0.035 162);
+  box-shadow: var(--shadow-gold);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal,
+  .animate-simmer,
+  .animate-bubble-ring,
+  .animate-float-bob,
+  .offer-bubble {
+    animation: none !important;
+  }
+}

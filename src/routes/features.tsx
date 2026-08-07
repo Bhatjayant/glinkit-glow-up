@@ -30,7 +30,7 @@ function FeaturesPage() {
 
       <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {FEATURES.map((f) => (
-          <article key={f.title} className="surface-panel rounded-2xl p-5">
+          <article key={f.title} className="surface-panel reveal rounded-2xl p-5">
             <h3 className="font-display text-base font-semibold">{f.title}</h3>
             <p className="mt-2 text-sm text-muted-foreground">{f.desc}</p>
           </article>
