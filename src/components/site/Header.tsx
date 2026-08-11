@@ -42,6 +42,12 @@ export function Header() {
         </div>
 
         <div className="flex shrink-0 items-center gap-2">
+          <Link
+            to="/dashboard"
+            className="hidden text-sm text-muted-foreground transition-colors hover:text-primary sm:inline"
+          >
+            Card builder
+          </Link>
           <Button variant="gold" size="sm" className="hidden sm:inline-flex" asChild>
             <a href={WHATSAPP_URL} target="_blank" rel="noreferrer">
               Get a demo
@@ -74,6 +80,13 @@ export function Header() {
               </li>
             ))}
           </ul>
+          <Link
+            to="/dashboard"
+            onClick={() => setOpen(false)}
+            className="block py-2.5 text-sm text-muted-foreground"
+          >
+            Card builder
+          </Link>
           <Button variant="gold" className="mt-2 w-full" asChild>
             <a href={WHATSAPP_URL} target="_blank" rel="noreferrer">
               Get a demo
