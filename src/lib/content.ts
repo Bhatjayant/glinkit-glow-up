@@ -58,3 +58,37 @@ export const AUDIENCES = [
     points: ["Investor-ready profile", "Product catalogue & PDFs", "Lead form on every card"],
   },
 ] as const;
+export const MINI_SITE_SECTIONS = [
+  {
+    title: "Cover & brand header",
+    desc: "Your logo, banner, name, designation and company — styled in your brand colours.",
+  },
+  {
+    title: "About your business",
+    desc: "A proper introduction section, like a homepage, so visitors know what you do.",
+  },
+  {
+    title: "Services & products",
+    desc: "Catalogue pages with images, pricing and descriptions — an entire mini shop window.",
+  },
+  {
+    title: "Gallery & videos",
+    desc: "20 photos and 5 YouTube videos to show work, sites, events and testimonials.",
+  },
+  {
+    title: "Brochures & PDFs",
+    desc: "Attach 2 documents — company profile, price list or product catalogue.",
+  },
+  {
+    title: "Payments & enquiries",
+    desc: "UPI/bank payment section, enquiry form, ratings and a visitor counter built in.",
+  },
+] as const;
+
+export const MINI_SITE_VS = [
+  { label: "Cost", card: "One small yearly fee", site: "Domain + hosting + developer" },
+  { label: "Setup time", card: "Live in about 2 minutes", site: "2–6 weeks of back and forth" },
+  { label: "Updates", card: "Instant, we do it for you", site: "Developer request every time" },
+  { label: "Sharing", card: "QR, link or NFC tap", site: "Type the URL and hope" },
+  { label: "Contact actions", card: "Call, WhatsApp, maps, save contact in one tap", site: "Usually a contact page" },
+] as const;
