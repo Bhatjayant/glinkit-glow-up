@@ -11,7 +11,7 @@ import { slugify, type Card } from "@/lib/cards";
 const title = "My cards — Glinkit dashboard";
 const description = "Create, edit and publish your Glinkit digital visiting cards.";
 
-export const Route = createFileRoute("/dashboard")({
+export const Route = createFileRoute("/dashboard/")({
   head: () => ({
     meta: [
       { title },
