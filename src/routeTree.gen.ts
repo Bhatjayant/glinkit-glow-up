@@ -19,6 +19,7 @@ import { Route as MiniWebsiteCardRouteImport } from './routes/mini-website-card'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as SampleCardRouteImport } from './routes/sample-card'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard.index'
+import { Route as DashboardCardIdRouteImport } from './routes/dashboard.$cardId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -70,6 +71,11 @@ const DashboardIndexRoute = DashboardIndexRouteImport.update({
   path: '/dashboard/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardCardIdRoute = DashboardCardIdRouteImport.update({
+  id: '/dashboard/$cardId',
+  path: '/dashboard/$cardId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -81,6 +87,7 @@ export interface FileRoutesByFullPath {
   '/mini-website-card': typeof MiniWebsiteCardRoute
   '/pricing': typeof PricingRoute
   '/sample-card': typeof SampleCardRoute
+  '/dashboard/$cardId': typeof DashboardCardIdRoute
   '/dashboard/': typeof DashboardIndexRoute
 }
 export interface FileRoutesByTo {
@@ -93,6 +100,7 @@ export interface FileRoutesByTo {
   '/mini-website-card': typeof MiniWebsiteCardRoute
   '/pricing': typeof PricingRoute
   '/sample-card': typeof SampleCardRoute
+  '/dashboard/$cardId': typeof DashboardCardIdRoute
   '/dashboard': typeof DashboardIndexRoute
 }
 export interface FileRoutesById {
@@ -106,6 +114,7 @@ export interface FileRoutesById {
   '/mini-website-card': typeof MiniWebsiteCardRoute
   '/pricing': typeof PricingRoute
   '/sample-card': typeof SampleCardRoute
+  '/dashboard/$cardId': typeof DashboardCardIdRoute
   '/dashboard/': typeof DashboardIndexRoute
 }
 export interface FileRouteTypes {
@@ -120,6 +129,7 @@ export interface FileRouteTypes {
     | '/mini-website-card'
     | '/pricing'
     | '/sample-card'
+    | '/dashboard/$cardId'
     | '/dashboard/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -132,6 +142,7 @@ export interface FileRouteTypes {
     | '/mini-website-card'
     | '/pricing'
     | '/sample-card'
+    | '/dashboard/$cardId'
     | '/dashboard'
   id:
     | '__root__'
@@ -144,6 +155,7 @@ export interface FileRouteTypes {
     | '/mini-website-card'
     | '/pricing'
     | '/sample-card'
+    | '/dashboard/$cardId'
     | '/dashboard/'
   fileRoutesById: FileRoutesById
 }
@@ -157,6 +169,7 @@ export interface RootRouteChildren {
   MiniWebsiteCardRoute: typeof MiniWebsiteCardRoute
   PricingRoute: typeof PricingRoute
   SampleCardRoute: typeof SampleCardRoute
+  DashboardCardIdRoute: typeof DashboardCardIdRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
 }
 
@@ -232,6 +245,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard/$cardId': {
+      id: '/dashboard/$cardId'
+      path: '/dashboard/$cardId'
+      fullPath: '/dashboard/$cardId'
+      preLoaderRoute: typeof DashboardCardIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -245,6 +265,7 @@ const rootRouteChildren: RootRouteChildren = {
   MiniWebsiteCardRoute: MiniWebsiteCardRoute,
   PricingRoute: PricingRoute,
   SampleCardRoute: SampleCardRoute,
+  DashboardCardIdRoute: DashboardCardIdRoute,
   DashboardIndexRoute: DashboardIndexRoute,
 }
 export const routeTree = rootRouteImport
