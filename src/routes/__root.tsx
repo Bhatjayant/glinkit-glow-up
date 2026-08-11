@@ -15,6 +15,7 @@ import { Header } from "../components/site/Header";
 import { Footer } from "../components/site/Footer";
 import { WhatsAppFloat } from "../components/site/WhatsAppFloat";
 import { FreeOfferBubble } from "../components/site/FreeOfferBubble";
+import { Toaster } from "../components/ui/sonner";
 
 function NotFoundComponent() {
   return (
@@ -133,6 +134,7 @@ function RootComponent() {
         <Footer />
         <WhatsAppFloat />
         <FreeOfferBubble />
+        <Toaster />
       </div>
     </QueryClientProvider>
   );
