@@ -15,6 +15,7 @@ import { Route as ContactRouteImport } from './routes/contact'
 import { Route as FeaturesRouteImport } from './routes/features'
 import { Route as MiniWebsiteCardRouteImport } from './routes/mini-website-card'
 import { Route as PricingRouteImport } from './routes/pricing'
+import { Route as SampleCardRouteImport } from './routes/sample-card'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -46,6 +47,11 @@ const PricingRoute = PricingRouteImport.update({
   path: '/pricing',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SampleCardRoute = SampleCardRouteImport.update({
+  id: '/sample-card',
+  path: '/sample-card',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -54,6 +60,7 @@ export interface FileRoutesByFullPath {
   '/features': typeof FeaturesRoute
   '/mini-website-card': typeof MiniWebsiteCardRoute
   '/pricing': typeof PricingRoute
+  '/sample-card': typeof SampleCardRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -62,6 +69,7 @@ export interface FileRoutesByTo {
   '/features': typeof FeaturesRoute
   '/mini-website-card': typeof MiniWebsiteCardRoute
   '/pricing': typeof PricingRoute
+  '/sample-card': typeof SampleCardRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -71,6 +79,7 @@ export interface FileRoutesById {
   '/features': typeof FeaturesRoute
   '/mini-website-card': typeof MiniWebsiteCardRoute
   '/pricing': typeof PricingRoute
+  '/sample-card': typeof SampleCardRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -81,6 +90,7 @@ export interface FileRouteTypes {
     | '/features'
     | '/mini-website-card'
     | '/pricing'
+    | '/sample-card'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -89,6 +99,7 @@ export interface FileRouteTypes {
     | '/features'
     | '/mini-website-card'
     | '/pricing'
+    | '/sample-card'
   id:
     | '__root__'
     | '/'
@@ -97,6 +108,7 @@ export interface FileRouteTypes {
     | '/features'
     | '/mini-website-card'
     | '/pricing'
+    | '/sample-card'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -106,6 +118,7 @@ export interface RootRouteChildren {
   FeaturesRoute: typeof FeaturesRoute
   MiniWebsiteCardRoute: typeof MiniWebsiteCardRoute
   PricingRoute: typeof PricingRoute
+  SampleCardRoute: typeof SampleCardRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -152,6 +165,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PricingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/sample-card': {
+      id: '/sample-card'
+      path: '/sample-card'
+      fullPath: '/sample-card'
+      preLoaderRoute: typeof SampleCardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -162,7 +182,18 @@ const rootRouteChildren: RootRouteChildren = {
   FeaturesRoute: FeaturesRoute,
   MiniWebsiteCardRoute: MiniWebsiteCardRoute,
   PricingRoute: PricingRoute,
+  SampleCardRoute: SampleCardRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
