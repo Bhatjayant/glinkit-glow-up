@@ -14,16 +14,264 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      card_leads: {
+        Row: {
+          card_id: string
+          created_at: string
+          email: string
+          id: string
+          message: string
+          name: string
+          phone: string
+        }
+        Insert: {
+          card_id: string
+          created_at?: string
+          email?: string
+          id?: string
+          message?: string
+          name?: string
+          phone?: string
+        }
+        Update: {
+          card_id?: string
+          created_at?: string
+          email?: string
+          id?: string
+          message?: string
+          name?: string
+          phone?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "card_leads_card_id_fkey"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "cards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      card_media: {
+        Row: {
+          card_id: string
+          created_at: string
+          id: string
+          kind: string
+          sort_order: number
+          title: string
+          url: string
+        }
+        Insert: {
+          card_id: string
+          created_at?: string
+          id?: string
+          kind?: string
+          sort_order?: number
+          title?: string
+          url: string
+        }
+        Update: {
+          card_id?: string
+          created_at?: string
+          id?: string
+          kind?: string
+          sort_order?: number
+          title?: string
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "card_media_card_id_fkey"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "cards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      card_products: {
+        Row: {
+          allow_buy: boolean
+          allow_enquiry: boolean
+          card_id: string
+          created_at: string
+          description: string
+          id: string
+          image_url: string | null
+          mrp: number | null
+          name: string
+          offer_price: number | null
+          sort_order: number
+        }
+        Insert: {
+          allow_buy?: boolean
+          allow_enquiry?: boolean
+          card_id: string
+          created_at?: string
+          description?: string
+          id?: string
+          image_url?: string | null
+          mrp?: number | null
+          name?: string
+          offer_price?: number | null
+          sort_order?: number
+        }
+        Update: {
+          allow_buy?: boolean
+          allow_enquiry?: boolean
+          card_id?: string
+          created_at?: string
+          description?: string
+          id?: string
+          image_url?: string | null
+          mrp?: number | null
+          name?: string
+          offer_price?: number | null
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "card_products_card_id_fkey"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "cards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cards: {
+        Row: {
+          about: string
+          address: string | null
+          bank_details: string | null
+          company: string
+          created_at: string
+          display_name: string
+          email: string | null
+          id: string
+          job_title: string
+          logo_url: string | null
+          maps_url: string | null
+          owner_id: string
+          phone: string | null
+          photo_url: string | null
+          published: boolean
+          slug: string
+          tagline: string
+          updated_at: string
+          upi_id: string | null
+          view_count: number
+          website: string | null
+          whatsapp: string | null
+        }
+        Insert: {
+          about?: string
+          address?: string | null
+          bank_details?: string | null
+          company?: string
+          created_at?: string
+          display_name?: string
+          email?: string | null
+          id?: string
+          job_title?: string
+          logo_url?: string | null
+          maps_url?: string | null
+          owner_id: string
+          phone?: string | null
+          photo_url?: string | null
+          published?: boolean
+          slug: string
+          tagline?: string
+          updated_at?: string
+          upi_id?: string | null
+          view_count?: number
+          website?: string | null
+          whatsapp?: string | null
+        }
+        Update: {
+          about?: string
+          address?: string | null
+          bank_details?: string | null
+          company?: string
+          created_at?: string
+          display_name?: string
+          email?: string | null
+          id?: string
+          job_title?: string
+          logo_url?: string | null
+          maps_url?: string | null
+          owner_id?: string
+          phone?: string | null
+          photo_url?: string | null
+          published?: boolean
+          slug?: string
+          tagline?: string
+          updated_at?: string
+          upi_id?: string | null
+          view_count?: number
+          website?: string | null
+          whatsapp?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      card_is_published: { Args: { _card_id: string }; Returns: boolean }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      increment_card_view: { Args: { _slug: string }; Returns: undefined }
+      owns_card: { Args: { _card_id: string }; Returns: boolean }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +398,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "user"],
+    },
   },
 } as const
