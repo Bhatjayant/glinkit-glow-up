@@ -104,6 +104,26 @@ function Index() {
         </div>
       </Section>
 
+      {/* Mini website card */}
+      <Section className="pt-0">
+        <div className="surface-panel reveal rounded-3xl p-8 sm:p-10">
+          <Eyebrow>Digital visiting card</Eyebrow>
+          <h2 className="max-w-2xl text-2xl font-bold sm:text-3xl">
+            It's not just a card — it's a{" "}
+            <span className="text-gold-gradient">mini website</span> for your business
+          </h2>
+          <p className="mt-3 max-w-2xl text-sm text-muted-foreground">
+            About, services, catalogue, gallery, brochures, payments and an enquiry form —
+            all on one link or QR, without domains, hosting or developers.
+          </p>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <Button variant="gold" asChild>
+              <Link to="/mini-website-card">Explore the mini website card</Link>
+            </Button>
+          </div>
+        </div>
+      </Section>
+
       {/* Audiences */}
       <Section className="pt-0">
         <div className="grid gap-4 lg:grid-cols-2">
