@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Eye, EyeOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { useAuth } from "@/hooks/use-auth";
@@ -39,6 +40,7 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [busy, setBusy] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const { session } = useAuth();
   const navigate = useNavigate();
   const router = useRouter();
@@ -83,13 +85,18 @@ function AuthPage() {
 
   const google = async () => {
     const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
+      redirect_uri: `${window.location.origin}/auth`,
     });
     if (result.error) {
-      toast.error("Google sign-in failed. Try email instead.");
+      toast.error(
+        result.error instanceof Error
+          ? `Google sign-in failed: ${result.error.message}`
+          : "Google sign-in failed. Try email instead.",
+      );
       return;
     }
     if (result.redirected) return;
+    await router.invalidate();
     void navigate({ to: "/dashboard" });
   };
 
@@ -121,14 +128,24 @@ function AuthPage() {
             maxLength={255}
             onChange={(e) => setEmail(e.target.value)}
           />
-          <input
-            className={inputCls}
-            type="password"
-            placeholder="Password"
-            value={password}
-            maxLength={72}
-            onChange={(e) => setPassword(e.target.value)}
-          />
+          <div className="relative">
+            <input
+              className={`${inputCls} pr-11`}
+              type={showPassword ? "text" : "password"}
+              placeholder="Password"
+              value={password}
+              maxLength={72}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <button
+              type="button"
+              aria-label={showPassword ? "Hide password" : "Show password"}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              onClick={() => setShowPassword((v) => !v)}
+            >
+              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </button>
+          </div>
           <Button variant="gold" className="w-full" disabled={busy} onClick={submit}>
             {mode === "signin" ? "Sign in" : "Create account"}
           </Button>
