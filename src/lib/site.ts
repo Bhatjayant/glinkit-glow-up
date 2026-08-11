@@ -10,6 +10,7 @@ export const WHATSAPP_URL = `https://wa.me/918808748088?text=${WA_TEXT}`;
 
 export const NAV_LINKS = [
   { to: "/", label: "Home" },
+  { to: "/mini-website-card", label: "Mini website card" },
   { to: "/features", label: "Features" },
   { to: "/pricing", label: "Pricing" },
   { to: "/about", label: "About" },
