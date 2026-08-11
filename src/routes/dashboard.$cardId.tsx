@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -95,6 +95,8 @@ function EditCardPage() {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const [form, setForm] = useState<Card | null>(null);
+  const [autoStatus, setAutoStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const dirtyRef = useRef(false);
 
   useEffect(() => {
     if (!loading && !user) void navigate({ to: "/auth" });
@@ -111,7 +113,7 @@ function EditCardPage() {
   });
 
   useEffect(() => {
-    if (data) setForm(data);
+    if (data && !dirtyRef.current) setForm(data);
   }, [data]);
 
   const { data: products = [] } = useQuery({
@@ -197,11 +199,53 @@ function EditCardPage() {
     },
     onSuccess: (published) => {
       toast.success(published ? "Saved and published" : "Saved");
+      dirtyRef.current = false;
+      setAutoStatus("saved");
       void qc.invalidateQueries({ queryKey: ["card", cardId] });
       void qc.invalidateQueries({ queryKey: ["my-cards"] });
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Could not save"),
   });
+
+  const autoSave = useCallback(
+    async (current: Card) => {
+      const parsed = cardSchema.safeParse({
+        slug: current.slug,
+        display_name: current.display_name,
+        job_title: current.job_title ?? "",
+        company: current.company ?? "",
+        tagline: current.tagline ?? "",
+        about: current.about ?? "",
+        photo_url: current.photo_url ?? "",
+        logo_url: current.logo_url ?? "",
+        phone: current.phone ?? "",
+        whatsapp: current.whatsapp ?? "",
+        email: current.email ?? "",
+        website: current.website ?? "",
+        address: current.address ?? "",
+        maps_url: current.maps_url ?? "",
+        upi_id: current.upi_id ?? "",
+        bank_details: current.bank_details ?? "",
+      });
+      if (!parsed.success) return;
+      setAutoStatus("saving");
+      const { error } = await supabase.from("cards").update(parsed.data).eq("id", cardId);
+      if (error) {
+        setAutoStatus("error");
+        return;
+      }
+      dirtyRef.current = false;
+      setAutoStatus("saved");
+      void qc.invalidateQueries({ queryKey: ["my-cards"] });
+    },
+    [cardId, qc],
+  );
+
+  useEffect(() => {
+    if (!form || !dirtyRef.current) return;
+    const t = setTimeout(() => void autoSave(form), 1200);
+    return () => clearTimeout(t);
+  }, [form, autoSave]);
 
   const addProduct = useMutation({
     mutationFn: async () => {
@@ -263,7 +307,11 @@ function EditCardPage() {
   if (!form) {
     return <div className="px-5 py-24 text-center text-sm text-muted-foreground">Loading…</div>;
   }
-  const set = (patch: Partial<Card>) => setForm({ ...form, ...patch });
+  const set = (patch: Partial<Card>) => {
+    dirtyRef.current = true;
+    setAutoStatus("saving");
+    setForm({ ...form, ...patch });
+  };
 
   return (
     <div className="glow-emerald px-5 py-12">
@@ -276,7 +324,18 @@ function EditCardPage() {
         </Link>
 
         <div className="mt-4 flex flex-wrap items-end justify-between gap-3">
-          <h1 className="font-display text-3xl font-bold">Edit card</h1>
+          <div>
+            <h1 className="font-display text-3xl font-bold">Edit card</h1>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {autoStatus === "saving"
+                ? "Auto-saving…"
+                : autoStatus === "saved"
+                  ? "All changes saved automatically"
+                  : autoStatus === "error"
+                    ? "Auto-save failed — press Save"
+                    : "Changes save automatically as you type"}
+            </p>
+          </div>
           <div className="flex gap-2">
             <Button variant="ghost" asChild>
               <Link to="/$slug" params={{ slug: form.slug }}>
