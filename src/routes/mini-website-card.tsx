@@ -37,12 +37,12 @@ function MiniWebsitePage() {
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Button variant="gold" size="xl" asChild>
+              <Link to="/sample-card">View a sample card</Link>
+            </Button>
+            <Button variant="goldOutline" size="xl" asChild>
               <a href={WHATSAPP_URL} target="_blank" rel="noreferrer">
                 Get my mini website card
               </a>
-            </Button>
-            <Button variant="goldOutline" size="xl" asChild>
-              <Link to="/pricing">View pricing</Link>
             </Button>
           </div>
           <div className="mt-10 grid gap-4 sm:grid-cols-3">
@@ -114,11 +114,16 @@ function MiniWebsitePage() {
               tap through — plus 3 months free for new customers.
             </p>
           </div>
-          <Button variant="gold" size="xl" asChild>
-            <a href={WHATSAPP_URL} target="_blank" rel="noreferrer">
-              See a live sample
-            </a>
-          </Button>
+          <div className="flex flex-wrap gap-3">
+            <Button variant="gold" size="xl" asChild>
+              <Link to="/sample-card">Open sample card</Link>
+            </Button>
+            <Button variant="goldOutline" size="xl" asChild>
+              <a href={WHATSAPP_URL} target="_blank" rel="noreferrer">
+                Talk on WhatsApp
+              </a>
+            </Button>
+          </div>
         </div>
       </Section>
     </>
