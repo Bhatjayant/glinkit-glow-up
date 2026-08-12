@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { NAV_LINKS, WHATSAPP_URL } from "@/lib/site";
+import { ThemeToggle } from "@/components/site/ThemeToggle";
 import wordmark from "@/assets/glinkit-logo.png.asset.json";
 
 function Wordmark() {
@@ -42,6 +43,7 @@ export function Header() {
         </div>
 
         <div className="flex shrink-0 items-center gap-2">
+          <ThemeToggle />
           <Link
             to="/dashboard"
             className="hidden text-sm text-muted-foreground transition-colors hover:text-primary sm:inline"
