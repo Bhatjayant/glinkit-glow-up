@@ -216,7 +216,11 @@ function PublicCardPage() {
   const links = media.filter((m) => m.kind === "link");
   const highlights = media.filter((m) => m.kind === "highlight");
   const isLight = card.theme === "light";
-  const L = getCardLayout(card.layout);
+  const layoutOverride =
+    typeof window !== "undefined"
+      ? new URLSearchParams(window.location.search).get("layout")
+      : null;
+  const L = getCardLayout(layoutOverride ?? card.layout);
   const logo = card.logo_url ? (
     <img
       src={card.logo_url}
