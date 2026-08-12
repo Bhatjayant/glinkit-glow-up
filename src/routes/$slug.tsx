@@ -206,8 +206,21 @@ function PublicCardPage() {
   };
 
   return (
-    <div className={isLight ? "card-theme-light" : "glow-emerald"}>
-      <div className="mx-auto max-w-md px-4 py-10">
+    <div
+      className={`relative min-h-screen ${isLight ? "card-theme-light" : ""}`}
+      style={{ background: backgroundCss(card.bg_style, isLight ? "light" : "dark") }}
+    >
+      {getCardBackground(card.bg_style).shimmer && (
+        <div
+          aria-hidden
+          className="animate-mild-sheen pointer-events-none absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(115deg, transparent 35%, rgba(224,181,88,0.16) 50%, transparent 65%)",
+          }}
+        />
+      )}
+      <div className="relative mx-auto max-w-md px-4 py-10">
         <div className="surface-panel overflow-hidden rounded-[2rem]">
           <div className="relative h-28 bg-gradient-to-br from-primary/30 via-primary/10 to-transparent">
             {card.logo_url && (
