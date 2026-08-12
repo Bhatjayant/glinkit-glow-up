@@ -9,6 +9,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { TemplatePreview } from "./TemplatePreview";
+import { getCardBackground } from "@/lib/card-backgrounds";
 import { cardTemplates, type CardTemplate } from "@/lib/card-templates";
 
 const categories = ["All", "Minimal", "Corporate", "Creative", "Service", "Product"] as const;
@@ -67,7 +68,7 @@ export function TemplateGallery({
               <div>
                 <p className="font-display text-sm font-semibold">{t.name}</p>
                 <p className="mt-0.5 text-[11px] uppercase tracking-wide text-primary">
-                  {t.category} · {t.theme === "light" ? "Light" : "Dark"}
+                  {t.category} · {getCardBackground(t.bg_style).name}
                 </p>
               </div>
               <div className="flex shrink-0 items-center gap-1.5">
