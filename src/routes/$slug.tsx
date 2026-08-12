@@ -1,20 +1,34 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { QRCodeSVG } from "qrcode.react";
 import {
+  BadgeCheck,
   Download,
   ExternalLink,
+  Eye,
   FileText,
   Globe,
+  Link2,
   Mail,
   MapPin,
   MessageCircle,
   Phone,
+  QrCode,
   Share2,
+  Sparkles,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { backgroundCss, getCardBackground } from "@/lib/card-backgrounds";
 import {
@@ -64,11 +78,13 @@ function ActionTile({
   onClick?: () => void;
 }) {
   const cls =
-    "flex flex-col items-center gap-2 rounded-2xl border border-primary/25 bg-primary/5 p-4 text-center text-xs font-medium transition-colors hover:border-primary/60 hover:bg-primary/10";
+    "group flex flex-col items-center gap-2 rounded-2xl border border-primary/20 bg-primary/[0.06] px-2 py-3 text-center text-[11px] font-medium transition-all hover:-translate-y-0.5 hover:border-primary/60 hover:bg-primary/12 hover:shadow-[0_10px_24px_-14px_var(--primary)]";
   const inner = (
     <>
-      <Icon className="h-5 w-5 text-primary" />
-      <span>{label}</span>
+      <span className="grid h-9 w-9 place-items-center rounded-full border border-primary/30 bg-primary/10 text-primary transition-colors group-hover:bg-primary/20">
+        <Icon className="h-4 w-4" />
+      </span>
+      <span className="leading-none">{label}</span>
     </>
   );
   return onClick ? (
@@ -79,6 +95,18 @@ function ActionTile({
     <a href={href} target="_blank" rel="noreferrer" className={cls}>
       {inner}
     </a>
+  );
+}
+
+function SectionHeading({ icon: Icon, children }: { icon?: typeof Phone; children: string }) {
+  return (
+    <div className="flex items-center gap-2.5">
+      {Icon && <Icon className="h-3.5 w-3.5 shrink-0 text-primary" />}
+      <h2 className="font-display text-[11px] font-semibold tracking-[0.18em] uppercase">
+        {children}
+      </h2>
+      <span className="h-px flex-1 bg-gradient-to-r from-primary/50 to-transparent" />
+    </div>
   );
 }
 
@@ -149,6 +177,8 @@ function LeadForm({ card }: { card: Card }) {
 
 function PublicCardPage() {
   const { slug } = Route.useParams();
+  const [qrOpen, setQrOpen] = useState(false);
+  const [lightbox, setLightbox] = useState<string | null>(null);
   const { data, isLoading } = useQuery({
     queryKey: ["public-card", slug],
     queryFn: () => fetchPublicCard(slug),
@@ -167,6 +197,8 @@ function PublicCardPage() {
   const images = media.filter((m) => m.kind === "image");
   const videos = media.filter((m) => m.kind === "youtube");
   const pdfs = media.filter((m) => m.kind === "pdf");
+  const links = media.filter((m) => m.kind === "link");
+  const highlights = media.filter((m) => m.kind === "highlight");
   const isLight = card.theme === "light";
 
   const contactLink = (text: string) => {
@@ -221,20 +253,39 @@ function PublicCardPage() {
           }}
         />
       )}
-      <div className="relative mx-auto max-w-md px-4 py-10">
+      <div className="relative mx-auto max-w-md px-4 pt-8 pb-32">
         <div className="surface-panel overflow-hidden rounded-[2rem]">
-          <div className="relative h-28 bg-gradient-to-br from-primary/30 via-primary/10 to-transparent">
+          <div className="relative h-36 overflow-hidden bg-gradient-to-br from-primary/35 via-primary/10 to-transparent">
+            <span
+              aria-hidden
+              className="animate-mild-sheen pointer-events-none absolute inset-0"
+              style={{
+                background:
+                  "linear-gradient(115deg, transparent 38%, rgba(255,255,255,0.18) 50%, transparent 62%)",
+              }}
+            />
+            <span
+              aria-hidden
+              className="absolute -top-16 -right-10 h-40 w-40 rounded-full border border-primary/30"
+            />
+            <span
+              aria-hidden
+              className="absolute -bottom-20 -left-12 h-44 w-44 rounded-full border border-primary/20"
+            />
             {card.logo_url && (
               <img
                 src={card.logo_url}
                 alt={`${card.company} logo`}
-                className="absolute top-4 left-5 h-8 w-auto rounded"
+                className="absolute top-4 left-5 h-9 w-auto rounded"
               />
             )}
+            <span className="absolute top-4 right-4 flex items-center gap-1.5 rounded-full border border-primary/30 bg-background/60 px-2.5 py-1 text-[10px] text-muted-foreground backdrop-blur">
+              <Eye className="h-3 w-3 text-primary" /> {card.view_count + 1} views
+            </span>
           </div>
 
           <div className="px-6 pb-6">
-            <div className="-mt-10 mb-4 h-20 w-20 overflow-hidden rounded-2xl border border-primary/40 bg-background">
+            <div className="-mt-12 mb-4 h-24 w-24 overflow-hidden rounded-3xl border border-primary/40 bg-background shadow-[0_18px_40px_-20px_var(--primary)] ring-4 ring-background">
               {card.photo_url ? (
                 <img
                   src={card.photo_url}
@@ -242,23 +293,30 @@ function PublicCardPage() {
                   className="h-full w-full object-cover"
                 />
               ) : (
-                <div className="grid h-full w-full place-items-center font-display text-2xl font-bold text-primary">
+                <div className="grid h-full w-full place-items-center font-display text-3xl font-bold text-primary">
                   {card.display_name.slice(0, 1) || "G"}
                 </div>
               )}
             </div>
 
-            <h1 className="font-display text-2xl font-bold">{card.display_name}</h1>
+            <h1 className="font-display flex items-center gap-1.5 text-2xl font-bold">
+              {card.display_name}
+              <BadgeCheck className="h-4.5 w-4.5 shrink-0 text-primary" />
+            </h1>
             {card.job_title && <p className="mt-1 text-sm text-primary">{card.job_title}</p>}
             {card.company && <p className="text-sm text-muted-foreground">{card.company}</p>}
-            {card.tagline && <p className="mt-2 text-sm text-muted-foreground">{card.tagline}</p>}
+            {card.tagline && (
+              <p className="mt-3 border-l-2 border-primary/50 pl-3 text-sm italic text-foreground/80">
+                {card.tagline}
+              </p>
+            )}
             {card.address && (
-              <p className="mt-2 flex items-start gap-1.5 text-xs text-muted-foreground">
+              <p className="mt-3 flex items-start gap-1.5 text-xs text-muted-foreground">
                 <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0" /> {card.address}
               </p>
             )}
 
-            <div className="mt-6 grid grid-cols-3 gap-3">
+            <div className="mt-6 grid grid-cols-4 gap-2.5">
               {card.phone && <ActionTile href={`tel:${card.phone}`} icon={Phone} label="Call" />}
               {card.whatsapp && (
                 <ActionTile
@@ -279,40 +337,89 @@ function PublicCardPage() {
                 />
               )}
               {card.website && <ActionTile href={card.website} icon={Globe} label="Website" />}
+              <ActionTile icon={QrCode} label="QR code" onClick={() => setQrOpen(true)} />
               <ActionTile icon={Share2} label="Share" onClick={share} />
             </div>
 
-            <Button variant="gold" className="mt-4 w-full" onClick={saveContact}>
-              <Download className="mr-2 h-4 w-4" /> Save to contacts
+            <Button variant="gold" className="mt-5 w-full" onClick={saveContact}>
+              <Download className="mr-2 h-4 w-4" /> Save to phone contacts
             </Button>
+
+            {highlights.length > 0 && (
+              <section className="mt-8">
+                <SectionHeading icon={Sparkles}>What we do</SectionHeading>
+                <ul className="mt-3 flex flex-wrap gap-2">
+                  {highlights.map((h) => (
+                    <li
+                      key={h.id}
+                      className="rounded-full border border-primary/30 bg-primary/[0.07] px-3 py-1.5 text-xs"
+                    >
+                      {h.title || h.url}
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
 
             {card.about && (
               <section className="mt-8">
-                <h2 className="font-display text-sm font-semibold tracking-wide uppercase">About</h2>
-                <p className="mt-2 text-sm whitespace-pre-line text-muted-foreground">{card.about}</p>
+                <SectionHeading>About</SectionHeading>
+                <p className="mt-3 text-sm leading-relaxed whitespace-pre-line text-muted-foreground">
+                  {card.about}
+                </p>
+              </section>
+            )}
+
+            {links.length > 0 && (
+              <section className="mt-8">
+                <SectionHeading icon={Link2}>Links</SectionHeading>
+                <div className="mt-3 grid gap-2">
+                  {links.map((l) => (
+                    <a
+                      key={l.id}
+                      href={l.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center justify-between gap-3 rounded-xl border border-border bg-primary/[0.03] px-4 py-3 text-sm transition-colors hover:border-primary/50"
+                    >
+                      <span className="truncate">{l.title || l.url}</span>
+                      <ExternalLink className="h-4 w-4 shrink-0 text-primary" />
+                    </a>
+                  ))}
+                </div>
               </section>
             )}
 
             {products.length > 0 && (
               <section className="mt-8">
-                <h2 className="font-display text-sm font-semibold tracking-wide uppercase">
-                  Products & services
-                </h2>
+                <SectionHeading>Products & services</SectionHeading>
                 <ul className="mt-3 space-y-3">
                   {products.map((p) => {
                     const off = discountPct(p.mrp, p.offer_price);
                     return (
-                      <li key={p.id} className="rounded-2xl border border-border p-4">
+                      <li
+                        key={p.id}
+                        className="overflow-hidden rounded-2xl border border-border bg-primary/[0.03] p-4 transition-colors hover:border-primary/40"
+                      >
                         {p.image_url && (
-                          <img
-                            src={p.image_url}
-                            alt={p.name}
-                            className="mb-3 h-36 w-full rounded-xl object-cover"
-                          />
+                          <button
+                            type="button"
+                            onClick={() => setLightbox(p.image_url)}
+                            className="mb-3 block w-full"
+                          >
+                            <img
+                              src={p.image_url}
+                              alt={p.name}
+                              loading="lazy"
+                              className="h-40 w-full rounded-xl object-cover"
+                            />
+                          </button>
                         )}
-                        <p className="text-sm font-semibold">{p.name}</p>
+                        <p className="font-display text-sm font-semibold">{p.name}</p>
                         {p.description && (
-                          <p className="mt-1 text-xs text-muted-foreground">{p.description}</p>
+                          <p className="mt-1 text-xs leading-relaxed whitespace-pre-line text-muted-foreground">
+                            {p.description}
+                          </p>
                         )}
                         <div className="mt-2 flex flex-wrap items-baseline gap-2">
                           {p.offer_price != null && (
@@ -371,18 +478,17 @@ function PublicCardPage() {
 
             {images.length > 0 && (
               <section className="mt-8">
-                <h2 className="font-display text-sm font-semibold tracking-wide uppercase">
-                  Gallery
-                </h2>
+                <SectionHeading>Gallery</SectionHeading>
                 <div className="mt-3 grid grid-cols-3 gap-2">
                   {images.map((m) => (
-                    <img
-                      key={m.id}
-                      src={m.url}
-                      alt={m.title || "Gallery image"}
-                      loading="lazy"
-                      className="aspect-square w-full rounded-xl border border-border object-cover"
-                    />
+                    <button key={m.id} type="button" onClick={() => setLightbox(m.url)}>
+                      <img
+                        src={m.url}
+                        alt={m.title || "Gallery image"}
+                        loading="lazy"
+                        className="aspect-square w-full rounded-xl border border-border object-cover transition-transform hover:scale-[1.03]"
+                      />
+                    </button>
                   ))}
                 </div>
               </section>
@@ -390,9 +496,7 @@ function PublicCardPage() {
 
             {videos.length > 0 && (
               <section className="mt-8 space-y-3">
-                <h2 className="font-display text-sm font-semibold tracking-wide uppercase">
-                  Videos
-                </h2>
+                <SectionHeading>Videos</SectionHeading>
                 {videos.map((m) => (
                   <a
                     key={m.id}
@@ -410,9 +514,7 @@ function PublicCardPage() {
 
             {pdfs.length > 0 && (
               <section className="mt-8 space-y-3">
-                <h2 className="font-display text-sm font-semibold tracking-wide uppercase">
-                  Brochures
-                </h2>
+                <SectionHeading>Brochures</SectionHeading>
                 {pdfs.map((m) => (
                   <a
                     key={m.id}
@@ -430,9 +532,7 @@ function PublicCardPage() {
 
             {(card.upi_id || card.bank_details) && (
               <section className="mt-8 rounded-2xl border border-primary/25 bg-primary/5 p-4">
-                <h2 className="font-display text-sm font-semibold tracking-wide uppercase">
-                  Payments
-                </h2>
+                <SectionHeading>Payments</SectionHeading>
                 {card.upi_id && (
                   <>
                     <p className="mt-2 text-sm">UPI: {card.upi_id}</p>
@@ -454,11 +554,73 @@ function PublicCardPage() {
             <LeadForm card={card} />
 
             <p className="mt-8 text-center text-[11px] text-muted-foreground">
-              {card.view_count + 1} visits · Powered by Glinkit
+              Powered by <span className="text-primary">Glinkit</span> · Endless Opportunities
             </p>
           </div>
         </div>
       </div>
+
+      {/* sticky quick bar */}
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-primary/20 bg-background/85 px-4 py-3 backdrop-blur-md">
+        <div className="mx-auto flex max-w-md gap-2">
+          {card.phone && (
+            <Button variant="goldOutline" className="flex-1" asChild>
+              <a href={`tel:${card.phone}`}>
+                <Phone className="mr-1.5 h-4 w-4" /> Call
+              </a>
+            </Button>
+          )}
+          {card.whatsapp && (
+            <Button variant="gold" className="flex-1" asChild>
+              <a
+                href={waLink(card.whatsapp, `Hi ${card.display_name}, I saw your Glinkit card.`)}
+                target="_blank"
+                rel="noreferrer"
+              >
+                <MessageCircle className="mr-1.5 h-4 w-4" /> WhatsApp
+              </a>
+            </Button>
+          )}
+          <Button variant="goldOutline" className="flex-1" onClick={saveContact}>
+            <Download className="mr-1.5 h-4 w-4" /> Save
+          </Button>
+        </div>
+      </div>
+
+      <Dialog open={qrOpen} onOpenChange={setQrOpen}>
+        <DialogContent className="max-w-xs">
+          <DialogHeader>
+            <DialogTitle className="font-display">Scan to open this card</DialogTitle>
+            <DialogDescription>Point any phone camera at the code.</DialogDescription>
+          </DialogHeader>
+          <div className="mx-auto rounded-2xl bg-white p-4">
+            <QRCodeSVG
+              value={typeof window === "undefined" ? "" : window.location.href}
+              size={200}
+              level="M"
+            />
+          </div>
+          <Button variant="goldOutline" onClick={share}>
+            <Share2 className="mr-2 h-4 w-4" /> Share link
+          </Button>
+        </DialogContent>
+      </Dialog>
+
+      {lightbox && (
+        <button
+          type="button"
+          aria-label="Close image"
+          onClick={() => setLightbox(null)}
+          className="fixed inset-0 z-50 grid place-items-center bg-background/90 p-6 backdrop-blur"
+        >
+          <X className="absolute top-5 right-5 h-5 w-5 text-primary" />
+          <img
+            src={lightbox}
+            alt="Preview"
+            className="max-h-[80vh] w-auto rounded-2xl border border-primary/30 object-contain"
+          />
+        </button>
+      )}
     </div>
   );
 }
