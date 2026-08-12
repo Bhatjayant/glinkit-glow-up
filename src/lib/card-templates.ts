@@ -8,6 +8,8 @@ export type CardTemplate = {
   theme: "dark" | "light";
   /** Designer backdrop id from card-backgrounds. */
   bg_style?: string;
+  /** Layout id from card-layouts. */
+  layout?: string;
   patch: Partial<Card>;
   products: { name: string; description: string; mrp?: number; offer_price?: number }[];
 };
@@ -15,6 +17,7 @@ export type CardTemplate = {
 export const cardTemplates: CardTemplate[] = [
   {
     id: "minimal-mono",
+    layout: "mono",
     bg_style: "classic",
     name: "Minimal Mono",
     category: "Minimal",
@@ -30,6 +33,7 @@ export const cardTemplates: CardTemplate[] = [
   },
   {
     id: "minimal-ivory",
+    layout: "spotlight",
     bg_style: "spotlight",
     name: "Ivory Calm",
     category: "Minimal",
@@ -47,6 +51,7 @@ export const cardTemplates: CardTemplate[] = [
   },
   {
     id: "corporate-exec",
+    layout: "executive",
     bg_style: "carbon",
     name: "Corporate Executive",
     category: "Corporate",
@@ -66,6 +71,7 @@ export const cardTemplates: CardTemplate[] = [
   },
   {
     id: "corporate-team",
+    layout: "classic",
     bg_style: "carbon",
     name: "Team Directory",
     category: "Corporate",
@@ -84,6 +90,7 @@ export const cardTemplates: CardTemplate[] = [
   },
   {
     id: "creative-studio",
+    layout: "portrait",
     bg_style: "aurora",
     name: "Creative Studio",
     category: "Creative",
@@ -103,6 +110,7 @@ export const cardTemplates: CardTemplate[] = [
   },
   {
     id: "creative-portfolio",
+    layout: "spotlight",
     bg_style: "spotlight",
     name: "Portfolio First",
     category: "Creative",
@@ -121,6 +129,7 @@ export const cardTemplates: CardTemplate[] = [
   },
   {
     id: "service-local",
+    layout: "classic",
     bg_style: "sunrise",
     name: "Local Service Pro",
     category: "Service",
@@ -139,6 +148,7 @@ export const cardTemplates: CardTemplate[] = [
   },
   {
     id: "service-clinic",
+    layout: "executive",
     bg_style: "velvet",
     name: "Clinic & Wellness",
     category: "Service",
@@ -158,6 +168,7 @@ export const cardTemplates: CardTemplate[] = [
   },
   {
     id: "product-catalog",
+    layout: "ticket",
     bg_style: "goldsilk",
     name: "Product Catalogue",
     category: "Product",
@@ -178,6 +189,7 @@ export const cardTemplates: CardTemplate[] = [
   },
   {
     id: "product-distributor",
+    layout: "mono",
     bg_style: "midnight",
     name: "Distributor & Wholesale",
     category: "Product",

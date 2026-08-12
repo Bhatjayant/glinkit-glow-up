@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { backgroundCss, getCardBackground } from "@/lib/card-backgrounds";
+import { avatarRadius, getCardLayout, panelRadius } from "@/lib/card-layouts";
 import {
   discountPct,
   fetchPublicCard,
@@ -71,18 +72,33 @@ function ActionTile({
   icon: Icon,
   label,
   onClick,
+  shape = "tile",
 }: {
   href?: string;
   icon: typeof Phone;
   label: string;
   onClick?: () => void;
+  shape?: "tile" | "circle" | "pill" | "list";
 }) {
+  const base = "group font-medium transition-all hover:-translate-y-0.5";
   const cls =
-    "group flex flex-col items-center gap-2 rounded-2xl border border-primary/20 bg-primary/[0.06] px-2 py-3 text-center text-[11px] font-medium transition-all hover:-translate-y-0.5 hover:border-primary/60 hover:bg-primary/12 hover:shadow-[0_10px_24px_-14px_var(--primary)]";
+    shape === "circle"
+      ? `${base} flex flex-col items-center gap-2 text-center text-[11px]`
+      : shape === "pill"
+        ? `${base} flex items-center gap-2 rounded-full border border-primary/25 bg-primary/[0.06] px-3.5 py-2 text-xs hover:border-primary/60`
+        : shape === "list"
+          ? `${base} flex items-center gap-3 rounded-none border-b border-border/70 px-1 py-3 text-sm hover:translate-y-0 hover:border-primary/60`
+          : `${base} flex flex-col items-center gap-2 rounded-2xl border border-primary/20 bg-primary/[0.06] px-2 py-3 text-center text-[11px] hover:border-primary/60 hover:bg-primary/12 hover:shadow-[0_10px_24px_-14px_var(--primary)]`;
+  const iconCls =
+    shape === "circle"
+      ? "grid h-12 w-12 place-items-center rounded-full border border-primary/35 bg-primary/12 text-primary shadow-[0_10px_22px_-16px_var(--primary)] transition-colors group-hover:bg-primary/25"
+      : shape === "pill" || shape === "list"
+        ? "grid h-7 w-7 shrink-0 place-items-center rounded-full bg-primary/15 text-primary"
+        : "grid h-9 w-9 place-items-center rounded-full border border-primary/30 bg-primary/10 text-primary transition-colors group-hover:bg-primary/20";
   const inner = (
     <>
-      <span className="grid h-9 w-9 place-items-center rounded-full border border-primary/30 bg-primary/10 text-primary transition-colors group-hover:bg-primary/20">
-        <Icon className="h-4 w-4" />
+      <span className={iconCls}>
+        <Icon className={shape === "circle" ? "h-5 w-5" : "h-4 w-4"} />
       </span>
       <span className="leading-none">{label}</span>
     </>
@@ -178,6 +194,10 @@ function LeadForm({ card }: { card: Card }) {
 function PublicCardPage() {
   const { slug } = Route.useParams();
   const [qrOpen, setQrOpen] = useState(false);
+  const [layoutOverride, setLayoutOverride] = useState<string | null>(null);
+  useEffect(() => {
+    setLayoutOverride(new URLSearchParams(window.location.search).get("layout"));
+  }, []);
   const [lightbox, setLightbox] = useState<string | null>(null);
   const { data, isLoading } = useQuery({
     queryKey: ["public-card", slug],
@@ -200,6 +220,19 @@ function PublicCardPage() {
   const links = media.filter((m) => m.kind === "link");
   const highlights = media.filter((m) => m.kind === "highlight");
   const isLight = card.theme === "light";
+  const L = getCardLayout(layoutOverride ?? card.layout);
+  const logo = card.logo_url ? (
+    <img
+      src={card.logo_url}
+      alt={`${card.company} logo`}
+      className="absolute top-4 left-5 h-9 w-auto rounded"
+    />
+  ) : null;
+  const viewChip = (
+    <span className="absolute top-4 right-4 flex items-center gap-1.5 rounded-full border border-primary/30 bg-background/60 px-2.5 py-1 text-[10px] text-muted-foreground backdrop-blur">
+      <Eye className="h-3 w-3 text-primary" /> {card.view_count + 1} views
+    </span>
+  );
 
   const contactLink = (text: string) => {
     if (card.whatsapp) return waLink(card.whatsapp, text);
@@ -254,38 +287,32 @@ function PublicCardPage() {
         />
       )}
       <div className="relative mx-auto max-w-md px-4 pt-8 pb-32">
-        <div className="surface-panel overflow-hidden rounded-[2rem]">
-          <div className="relative h-36 overflow-hidden bg-gradient-to-br from-primary/35 via-primary/10 to-transparent">
-            <span
-              aria-hidden
-              className="animate-mild-sheen pointer-events-none absolute inset-0"
-              style={{
-                background:
-                  "linear-gradient(115deg, transparent 38%, rgba(255,255,255,0.18) 50%, transparent 62%)",
-              }}
-            />
-            <span
-              aria-hidden
-              className="absolute -top-16 -right-10 h-40 w-40 rounded-full border border-primary/30"
-            />
-            <span
-              aria-hidden
-              className="absolute -bottom-20 -left-12 h-44 w-44 rounded-full border border-primary/20"
-            />
-            {card.logo_url && (
-              <img
-                src={card.logo_url}
-                alt={`${card.company} logo`}
-                className="absolute top-4 left-5 h-9 w-auto rounded"
+        <div className={`surface-panel overflow-hidden ${panelRadius(L.panel)}`}>
+          {L.hero === "banner" && (
+            <div className="relative h-36 overflow-hidden bg-gradient-to-br from-primary/35 via-primary/10 to-transparent">
+              <span
+                aria-hidden
+                className="animate-mild-sheen pointer-events-none absolute inset-0"
+                style={{
+                  background:
+                    "linear-gradient(115deg, transparent 38%, rgba(255,255,255,0.18) 50%, transparent 62%)",
+                }}
               />
-            )}
-            <span className="absolute top-4 right-4 flex items-center gap-1.5 rounded-full border border-primary/30 bg-background/60 px-2.5 py-1 text-[10px] text-muted-foreground backdrop-blur">
-              <Eye className="h-3 w-3 text-primary" /> {card.view_count + 1} views
-            </span>
-          </div>
+              <span
+                aria-hidden
+                className="absolute -top-16 -right-10 h-40 w-40 rounded-full border border-primary/30"
+              />
+              <span
+                aria-hidden
+                className="absolute -bottom-20 -left-12 h-44 w-44 rounded-full border border-primary/20"
+              />
+              {logo}
+              {viewChip}
+            </div>
+          )}
 
-          <div className="px-6 pb-6">
-            <div className="-mt-12 mb-4 h-24 w-24 overflow-hidden rounded-3xl border border-primary/40 bg-background shadow-[0_18px_40px_-20px_var(--primary)] ring-4 ring-background">
+          {L.hero === "cover" && (
+            <div className="relative h-72 overflow-hidden">
               {card.photo_url ? (
                 <img
                   src={card.photo_url}
@@ -293,39 +320,169 @@ function PublicCardPage() {
                   className="h-full w-full object-cover"
                 />
               ) : (
-                <div className="grid h-full w-full place-items-center font-display text-3xl font-bold text-primary">
+                <div className="grid h-full w-full place-items-center bg-primary/15 font-display text-6xl font-bold text-primary">
                   {card.display_name.slice(0, 1) || "G"}
                 </div>
               )}
+              <div className="absolute inset-0 bg-gradient-to-t from-background via-background/55 to-transparent" />
+              {logo}
+              {viewChip}
+              <div className="absolute inset-x-5 bottom-4">
+                <h1 className="font-display flex items-center gap-1.5 text-2xl font-bold drop-shadow">
+                  {card.display_name}
+                  <BadgeCheck className="h-4.5 w-4.5 shrink-0 text-primary" />
+                </h1>
+                {card.job_title && <p className="text-sm text-primary">{card.job_title}</p>}
+                {card.company && <p className="text-xs text-muted-foreground">{card.company}</p>}
+              </div>
             </div>
+          )}
 
-            <h1 className="font-display flex items-center gap-1.5 text-2xl font-bold">
-              {card.display_name}
-              <BadgeCheck className="h-4.5 w-4.5 shrink-0 text-primary" />
-            </h1>
-            {card.job_title && <p className="mt-1 text-sm text-primary">{card.job_title}</p>}
-            {card.company && <p className="text-sm text-muted-foreground">{card.company}</p>}
+          {L.hero === "ticket" && (
+            <div className="relative border-b border-dashed border-primary/40 bg-primary/[0.07] py-4 text-center">
+              <p className="font-display text-[10px] tracking-[0.32em] uppercase text-primary">
+                Digital visiting card
+              </p>
+              {viewChip}
+              <span
+                aria-hidden
+                className="absolute -bottom-2.5 -left-2.5 h-5 w-5 rounded-full bg-[var(--background)]"
+              />
+              <span
+                aria-hidden
+                className="absolute -right-2.5 -bottom-2.5 h-5 w-5 rounded-full bg-[var(--background)]"
+              />
+            </div>
+          )}
+
+          <div className={`px-6 pb-6 ${L.hero === "banner" || L.hero === "cover" ? "" : "pt-6"}`}>
+            {L.hero === "split" ? (
+              <div className="flex items-start gap-4">
+                <div
+                  className={`h-20 w-20 shrink-0 overflow-hidden border border-primary/40 bg-background ${avatarRadius(L.avatar)}`}
+                >
+                  {card.photo_url ? (
+                    <img
+                      src={card.photo_url}
+                      alt={card.display_name}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="grid h-full w-full place-items-center font-display text-2xl font-bold text-primary">
+                      {card.display_name.slice(0, 1) || "G"}
+                    </div>
+                  )}
+                </div>
+                <div className="min-w-0">
+                  <h1 className="font-display flex items-center gap-1.5 text-xl font-bold">
+                    {card.display_name}
+                    <BadgeCheck className="h-4 w-4 shrink-0 text-primary" />
+                  </h1>
+                  {card.job_title && (
+                    <p className="text-[13px] tracking-wide text-primary uppercase">
+                      {card.job_title}
+                    </p>
+                  )}
+                  {card.company && (
+                    <p className="text-sm text-muted-foreground">{card.company}</p>
+                  )}
+                  <div className="mt-2 flex items-center gap-2 text-[10px] text-muted-foreground">
+                    <Eye className="h-3 w-3 text-primary" /> {card.view_count + 1} views
+                  </div>
+                </div>
+              </div>
+            ) : L.hero === "mono" ? (
+              <div>
+                <div className="flex items-center justify-between gap-3">
+                  <span className="font-display text-[10px] tracking-[0.3em] uppercase text-primary">
+                    {card.company || "Visiting card"}
+                  </span>
+                  <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                    <Eye className="h-3 w-3 text-primary" /> {card.view_count + 1}
+                  </span>
+                </div>
+                <span aria-hidden className="mt-3 block h-px w-full bg-primary/30" />
+                <h1 className="font-display mt-4 text-3xl leading-tight font-bold tracking-tight">
+                  {card.display_name}
+                </h1>
+                {card.job_title && (
+                  <p className="mt-1 text-xs tracking-[0.18em] uppercase text-muted-foreground">
+                    {card.job_title}
+                  </p>
+                )}
+                <span aria-hidden className="mt-4 block h-px w-16 bg-primary" />
+              </div>
+            ) : L.hero === "cover" ? null : (
+              <div className={L.align === "center" ? "text-center" : ""}>
+                <div
+                  className={`${L.hero === "banner" ? "-mt-12" : ""} mb-4 h-24 w-24 overflow-hidden border border-primary/40 bg-background shadow-[0_18px_40px_-20px_var(--primary)] ring-4 ring-background ${avatarRadius(L.avatar)} ${L.align === "center" ? "mx-auto h-28 w-28" : ""}`}
+                >
+                  {card.photo_url ? (
+                    <img
+                      src={card.photo_url}
+                      alt={card.display_name}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="grid h-full w-full place-items-center font-display text-3xl font-bold text-primary">
+                      {card.display_name.slice(0, 1) || "G"}
+                    </div>
+                  )}
+                </div>
+
+                <h1
+                  className={`font-display flex items-center gap-1.5 text-2xl font-bold ${L.align === "center" ? "justify-center" : ""}`}
+                >
+                  {card.display_name}
+                  <BadgeCheck className="h-4.5 w-4.5 shrink-0 text-primary" />
+                </h1>
+                {card.job_title && <p className="mt-1 text-sm text-primary">{card.job_title}</p>}
+                {card.company && <p className="text-sm text-muted-foreground">{card.company}</p>}
+              </div>
+            )}
+
             {card.tagline && (
-              <p className="mt-3 border-l-2 border-primary/50 pl-3 text-sm italic text-foreground/80">
+              <p
+                className={
+                  L.align === "center"
+                    ? "mt-3 text-center text-sm italic text-foreground/80"
+                    : "mt-3 border-l-2 border-primary/50 pl-3 text-sm italic text-foreground/80"
+                }
+              >
                 {card.tagline}
               </p>
             )}
             {card.address && (
-              <p className="mt-3 flex items-start gap-1.5 text-xs text-muted-foreground">
+              <p
+                className={`mt-3 flex items-start gap-1.5 text-xs text-muted-foreground ${L.align === "center" ? "justify-center text-center" : ""}`}
+              >
                 <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0" /> {card.address}
               </p>
             )}
 
-            <div className="mt-6 grid grid-cols-4 gap-2.5">
-              {card.phone && <ActionTile href={`tel:${card.phone}`} icon={Phone} label="Call" />}
+            <div
+              className={
+                L.tiles === "list"
+                  ? "mt-6 grid grid-cols-1"
+                  : L.tiles === "pill"
+                    ? `mt-6 flex flex-wrap gap-2 ${L.align === "center" ? "justify-center" : ""}`
+                    : "mt-6 grid grid-cols-4 gap-2.5"
+              }
+            >
+              {card.phone && (
+                <ActionTile href={`tel:${card.phone}`} icon={Phone} label="Call" shape={L.tiles} />
+              )}
               {card.whatsapp && (
                 <ActionTile
                   href={waLink(card.whatsapp, `Hi ${card.display_name}, I saw your card.`)}
                   icon={MessageCircle}
                   label="WhatsApp"
+                  shape={L.tiles}
                 />
               )}
-              {card.email && <ActionTile href={`mailto:${card.email}`} icon={Mail} label="Email" />}
+              {card.email && (
+                <ActionTile href={`mailto:${card.email}`} icon={Mail} label="Email" shape={L.tiles} />
+              )}
               {(card.maps_url || card.address) && (
                 <ActionTile
                   href={
@@ -334,16 +491,27 @@ function PublicCardPage() {
                   }
                   icon={MapPin}
                   label="Directions"
+                  shape={L.tiles}
                 />
               )}
-              {card.website && <ActionTile href={card.website} icon={Globe} label="Website" />}
-              <ActionTile icon={QrCode} label="QR code" onClick={() => setQrOpen(true)} />
-              <ActionTile icon={Share2} label="Share" onClick={share} />
+              {card.website && (
+                <ActionTile href={card.website} icon={Globe} label="Website" shape={L.tiles} />
+              )}
+              <ActionTile
+                icon={QrCode}
+                label="QR code"
+                onClick={() => setQrOpen(true)}
+                shape={L.tiles}
+              />
+              <ActionTile icon={Share2} label="Share" onClick={share} shape={L.tiles} />
             </div>
 
             <Button variant="gold" className="mt-5 w-full" onClick={saveContact}>
-              <Download className="mr-2 h-4 w-4" /> Save to phone contacts
+              <Download className="mr-2 h-4 w-4" /> Save contact (.vcf)
             </Button>
+            <p className="mt-1.5 text-center text-[11px] text-muted-foreground">
+              Downloads a vCard — opens straight into your phone contacts.
+            </p>
 
             {highlights.length > 0 && (
               <section className="mt-8">
