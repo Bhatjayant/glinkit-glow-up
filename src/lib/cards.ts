@@ -23,6 +23,7 @@ export type Card = {
   view_count: number;
   theme?: string | null;
   bg_style?: string | null;
+  layout?: string | null;
 };
 
 export type Product = {
