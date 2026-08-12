@@ -239,6 +239,7 @@
   --surface: oklch(0.99 0.012 150);
   --shadow-elegant: 0 22px 50px -26px oklch(0.3 0.06 162 / 38%);
   --shadow-gold: 0 16px 34px -18px color-mix(in oklab, var(--gold) 42%, transparent);
+  --gradient-gold: linear-gradient(135deg, oklch(0.52 0.12 74), oklch(0.68 0.15 84), oklch(0.82 0.13 92));
   --gradient-emerald: radial-gradient(
     1200px 600px at 50% -10%,
     oklch(0.97 0.045 140) 0%,
