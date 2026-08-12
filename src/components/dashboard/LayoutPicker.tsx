@@ -5,7 +5,7 @@ export function LayoutPicker({
   value,
   onChange,
 }: {
-  value?: string | null;
+  value?: string | null | undefined;
   onChange: (id: string) => void;
 }) {
   const active = value ?? "classic";
