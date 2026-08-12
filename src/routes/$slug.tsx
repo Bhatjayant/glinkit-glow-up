@@ -248,7 +248,9 @@ function PublicCardPage() {
   };
 
   const saveContact = () => {
-    const blob = new Blob([vcard(card)], { type: "text/vcard" });
+    const blob = new Blob([vcard(card, links.map((l) => ({ url: l.url, title: l.title })))], {
+      type: "text/vcard",
+    });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
