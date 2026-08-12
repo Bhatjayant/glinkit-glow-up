@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { backgroundCss, getCardBackground } from "@/lib/card-backgrounds";
 import {
   discountPct,
   fetchPublicCard,

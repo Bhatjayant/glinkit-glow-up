@@ -395,6 +395,10 @@
   animation: simmer 2.2s ease-in-out infinite;
 }
 
+@utility animate-mild-sheen {
+  animation: mild-sheen 7s ease-in-out infinite;
+}
+
 @utility animate-bubble-ring {
   animation: bubble-ring 2.2s ease-out infinite;
 }
