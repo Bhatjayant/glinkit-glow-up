@@ -1,20 +1,34 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { QRCodeSVG } from "qrcode.react";
 import {
+  BadgeCheck,
   Download,
   ExternalLink,
+  Eye,
   FileText,
   Globe,
+  Link2,
   Mail,
   MapPin,
   MessageCircle,
   Phone,
+  QrCode,
   Share2,
+  Sparkles,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { backgroundCss, getCardBackground } from "@/lib/card-backgrounds";
 import {
