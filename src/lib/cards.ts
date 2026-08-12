@@ -21,6 +21,7 @@ export type Card = {
   bank_details: string | null;
   published: boolean;
   view_count: number;
+  theme?: string | null;
 };
 
 export type Product = {
