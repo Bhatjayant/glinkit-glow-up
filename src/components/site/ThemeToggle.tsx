@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Moon, Sun } from "lucide-react";
+import { THEME_COLOR_EVENT, applyThemeColors } from "@/lib/theme-colors";
 
 const KEY = "glinkit-theme";
 
@@ -11,6 +12,7 @@ export function ThemeToggle({ className = "" }: { className?: string }) {
     const isLight = stored === "light";
     setLight(isLight);
     document.documentElement.classList.toggle("theme-light", isLight);
+    applyThemeColors();
   }, []);
 
   const toggle = () => {
@@ -18,6 +20,8 @@ export function ThemeToggle({ className = "" }: { className?: string }) {
     setLight(next);
     document.documentElement.classList.toggle("theme-light", next);
     window.localStorage.setItem(KEY, next ? "light" : "dark");
+    window.dispatchEvent(new Event(THEME_COLOR_EVENT));
+    applyThemeColors();
   };
 
   return (
