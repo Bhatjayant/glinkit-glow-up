@@ -445,7 +445,7 @@ function PublicCardPage() {
               <p
                 className={
                   L.align === "center"
-                    ? "mt-3 text-sm italic text-foreground/80"
+                    ? "mt-3 text-center text-sm italic text-foreground/80"
                     : "mt-3 border-l-2 border-primary/50 pl-3 text-sm italic text-foreground/80"
                 }
               >
