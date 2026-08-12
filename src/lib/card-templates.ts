@@ -6,6 +6,8 @@ export type CardTemplate = {
   category: "Minimal" | "Corporate" | "Creative" | "Service" | "Product";
   blurb: string;
   theme: "dark" | "light";
+  /** Designer backdrop id from card-backgrounds. */
+  bg_style?: string;
   patch: Partial<Card>;
   products: { name: string; description: string; mrp?: number; offer_price?: number }[];
 };
@@ -13,6 +15,7 @@ export type CardTemplate = {
 export const cardTemplates: CardTemplate[] = [
   {
     id: "minimal-mono",
+    bg_style: "classic",
     name: "Minimal Mono",
     category: "Minimal",
     blurb: "Name, role and one clean line. Nothing else.",
@@ -27,6 +30,7 @@ export const cardTemplates: CardTemplate[] = [
   },
   {
     id: "minimal-ivory",
+    bg_style: "spotlight",
     name: "Ivory Calm",
     category: "Minimal",
     blurb: "Light, airy layout for consultants and coaches.",
@@ -43,6 +47,7 @@ export const cardTemplates: CardTemplate[] = [
   },
   {
     id: "corporate-exec",
+    bg_style: "carbon",
     name: "Corporate Executive",
     category: "Corporate",
     blurb: "Formal tone for leadership and B2B sales teams.",
@@ -61,6 +66,7 @@ export const cardTemplates: CardTemplate[] = [
   },
   {
     id: "corporate-team",
+    bg_style: "carbon",
     name: "Team Directory",
     category: "Corporate",
     blurb: "For franchise and multi-branch teams with offices listed.",
@@ -78,6 +84,7 @@ export const cardTemplates: CardTemplate[] = [
   },
   {
     id: "creative-studio",
+    bg_style: "aurora",
     name: "Creative Studio",
     category: "Creative",
     blurb: "Bold voice for designers, studios and agencies.",
@@ -96,6 +103,7 @@ export const cardTemplates: CardTemplate[] = [
   },
   {
     id: "creative-portfolio",
+    bg_style: "spotlight",
     name: "Portfolio First",
     category: "Creative",
     blurb: "Photographers and content creators — visuals lead.",
@@ -113,6 +121,7 @@ export const cardTemplates: CardTemplate[] = [
   },
   {
     id: "service-local",
+    bg_style: "sunrise",
     name: "Local Service Pro",
     category: "Service",
     blurb: "Electricians, interiors, repairs — call and WhatsApp first.",
@@ -130,6 +139,7 @@ export const cardTemplates: CardTemplate[] = [
   },
   {
     id: "service-clinic",
+    bg_style: "velvet",
     name: "Clinic & Wellness",
     category: "Service",
     blurb: "Doctors, clinics and wellness studios with booking flow.",
@@ -148,6 +158,7 @@ export const cardTemplates: CardTemplate[] = [
   },
   {
     id: "product-catalog",
+    bg_style: "goldsilk",
     name: "Product Catalogue",
     category: "Product",
     blurb: "Retail and D2C — priced items with Buy now on UPI.",
@@ -167,6 +178,7 @@ export const cardTemplates: CardTemplate[] = [
   },
   {
     id: "product-distributor",
+    bg_style: "midnight",
     name: "Distributor & Wholesale",
     category: "Product",
     blurb: "B2B trade cards with MOQ and dealer enquiry.",
