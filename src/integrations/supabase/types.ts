@@ -145,6 +145,7 @@ export type Database = {
           about: string
           address: string | null
           bank_details: string | null
+          bg_style: string
           company: string
           created_at: string
           display_name: string
@@ -170,6 +171,7 @@ export type Database = {
           about?: string
           address?: string | null
           bank_details?: string | null
+          bg_style?: string
           company?: string
           created_at?: string
           display_name?: string
@@ -195,6 +197,7 @@ export type Database = {
           about?: string
           address?: string | null
           bank_details?: string | null
+          bg_style?: string
           company?: string
           created_at?: string
           display_name?: string
