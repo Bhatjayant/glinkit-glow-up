@@ -315,6 +315,47 @@ function EditCardPage() {
     onSuccess: () => void qc.invalidateQueries({ queryKey: ["card-media", cardId] }),
   });
 
+  const [appliedTemplate, setAppliedTemplate] = useState<string | null>(null);
+  const applyTemplate = useMutation({
+    mutationFn: async (t: CardTemplate) => {
+      if (!form) return;
+      const keep = (current: string | null | undefined, next?: string | null) =>
+        current && current.trim() ? current : (next ?? "");
+      const patch = {
+        job_title: keep(form.job_title, t.patch.job_title),
+        company: keep(form.company, t.patch.company),
+        tagline: keep(form.tagline, t.patch.tagline),
+        about: keep(form.about, t.patch.about),
+        theme: t.theme,
+      };
+      const { error } = await supabase.from("cards").update(patch).eq("id", cardId);
+      if (error) throw error;
+      if (t.products.length && products.length === 0) {
+        const { error: pErr } = await supabase.from("card_products").insert(
+          t.products.map((p, i) => ({
+            card_id: cardId,
+            name: p.name,
+            description: p.description,
+            mrp: p.mrp ?? null,
+            offer_price: p.offer_price ?? null,
+            sort_order: i,
+          })),
+        );
+        if (pErr) throw pErr;
+      }
+      dirtyRef.current = false;
+      setForm({ ...form, ...patch });
+      return t.id;
+    },
+    onSuccess: (id) => {
+      toast.success("Template applied");
+      setAppliedTemplate(id ?? null);
+      void qc.invalidateQueries({ queryKey: ["card", cardId] });
+      void qc.invalidateQueries({ queryKey: ["card-products", cardId] });
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Could not apply template"),
+  });
+
   if (!form) {
     return <div className="px-5 py-24 text-center text-sm text-muted-foreground">Loading…</div>;
   }
