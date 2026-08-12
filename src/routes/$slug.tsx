@@ -78,11 +78,13 @@ function ActionTile({
   onClick?: () => void;
 }) {
   const cls =
-    "flex flex-col items-center gap-2 rounded-2xl border border-primary/25 bg-primary/5 p-4 text-center text-xs font-medium transition-colors hover:border-primary/60 hover:bg-primary/10";
+    "group flex flex-col items-center gap-2 rounded-2xl border border-primary/20 bg-primary/[0.06] px-2 py-3 text-center text-[11px] font-medium transition-all hover:-translate-y-0.5 hover:border-primary/60 hover:bg-primary/12 hover:shadow-[0_10px_24px_-14px_var(--primary)]";
   const inner = (
     <>
-      <Icon className="h-5 w-5 text-primary" />
-      <span>{label}</span>
+      <span className="grid h-9 w-9 place-items-center rounded-full border border-primary/30 bg-primary/10 text-primary transition-colors group-hover:bg-primary/20">
+        <Icon className="h-4 w-4" />
+      </span>
+      <span className="leading-none">{label}</span>
     </>
   );
   return onClick ? (
@@ -93,6 +95,18 @@ function ActionTile({
     <a href={href} target="_blank" rel="noreferrer" className={cls}>
       {inner}
     </a>
+  );
+}
+
+function SectionHeading({ icon: Icon, children }: { icon?: typeof Phone; children: string }) {
+  return (
+    <div className="flex items-center gap-2.5">
+      {Icon && <Icon className="h-3.5 w-3.5 shrink-0 text-primary" />}
+      <h2 className="font-display text-[11px] font-semibold tracking-[0.18em] uppercase">
+        {children}
+      </h2>
+      <span className="h-px flex-1 bg-gradient-to-r from-primary/50 to-transparent" />
+    </div>
   );
 }
 
