@@ -159,6 +159,7 @@ export type Database = {
           published: boolean
           slug: string
           tagline: string
+          theme: string
           updated_at: string
           upi_id: string | null
           view_count: number
@@ -183,6 +184,7 @@ export type Database = {
           published?: boolean
           slug: string
           tagline?: string
+          theme?: string
           updated_at?: string
           upi_id?: string | null
           view_count?: number
@@ -207,6 +209,7 @@ export type Database = {
           published?: boolean
           slug?: string
           tagline?: string
+          theme?: string
           updated_at?: string
           upi_id?: string | null
           view_count?: number
