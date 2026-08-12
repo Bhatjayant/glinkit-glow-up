@@ -51,6 +51,7 @@ const cardSchema = z.object({
   upi_id: z.string().trim().max(120),
   bank_details: z.string().trim().max(500),
   theme: z.enum(["dark", "light"]),
+  bg_style: z.string().trim().max(40),
 });
 
 function Field({
