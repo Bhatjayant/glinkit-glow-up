@@ -78,8 +78,8 @@ export const cardBackgrounds: CardBackground[] = [
   },
 ];
 
-export const getCardBackground = (id?: string | null) =>
-  cardBackgrounds.find((b) => b.id === id) ?? cardBackgrounds[0];
+export const getCardBackground = (id?: string | null): CardBackground =>
+  cardBackgrounds.find((b) => b.id === id) ?? (cardBackgrounds[0] as CardBackground);
 
 export const backgroundCss = (id: string | null | undefined, theme: "dark" | "light") =>
   theme === "light" ? getCardBackground(id).light : getCardBackground(id).dark;
