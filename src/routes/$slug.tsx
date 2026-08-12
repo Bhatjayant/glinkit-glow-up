@@ -177,6 +177,8 @@ function LeadForm({ card }: { card: Card }) {
 
 function PublicCardPage() {
   const { slug } = Route.useParams();
+  const [qrOpen, setQrOpen] = useState(false);
+  const [lightbox, setLightbox] = useState<string | null>(null);
   const { data, isLoading } = useQuery({
     queryKey: ["public-card", slug],
     queryFn: () => fetchPublicCard(slug),
@@ -195,6 +197,8 @@ function PublicCardPage() {
   const images = media.filter((m) => m.kind === "image");
   const videos = media.filter((m) => m.kind === "youtube");
   const pdfs = media.filter((m) => m.kind === "pdf");
+  const links = media.filter((m) => m.kind === "link");
+  const highlights = media.filter((m) => m.kind === "highlight");
   const isLight = card.theme === "light";
 
   const contactLink = (text: string) => {
