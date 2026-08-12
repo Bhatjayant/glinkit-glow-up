@@ -47,6 +47,7 @@ const cardSchema = z.object({
   maps_url: z.string().trim().max(500),
   upi_id: z.string().trim().max(120),
   bank_details: z.string().trim().max(500),
+  theme: z.enum(["dark", "light"]),
 });
 
 function Field({
@@ -185,6 +186,7 @@ function EditCardPage() {
         maps_url: form.maps_url ?? "",
         upi_id: form.upi_id ?? "",
         bank_details: form.bank_details ?? "",
+        theme: form.theme === "light" ? "light" : "dark",
       });
       if (!parsed.success) throw new Error(parsed.error.issues[0]?.message ?? "Check your details");
       const { error } = await supabase
@@ -226,6 +228,7 @@ function EditCardPage() {
         maps_url: current.maps_url ?? "",
         upi_id: current.upi_id ?? "",
         bank_details: current.bank_details ?? "",
+        theme: current.theme === "light" ? "light" : "dark",
       });
       if (!parsed.success) return;
       setAutoStatus("saving");
@@ -353,6 +356,21 @@ function EditCardPage() {
 
         <section className="surface-panel mt-8 space-y-4 rounded-2xl p-6">
           <h2 className="font-display text-lg font-semibold">Profile</h2>
+          <div>
+            <p className="mb-2 text-xs font-medium text-muted-foreground">Card appearance</p>
+            <div className="flex gap-2">
+              {(["dark", "light"] as const).map((t) => (
+                <Button
+                  key={t}
+                  size="sm"
+                  variant={(form.theme ?? "dark") === t ? "gold" : "goldOutline"}
+                  onClick={() => set({ theme: t })}
+                >
+                  {t === "dark" ? "Dark green" : "Light ivory"}
+                </Button>
+              ))}
+            </div>
+          </div>
           <Field
             label="Card link (glinkit.com/…)"
             value={form.slug}
