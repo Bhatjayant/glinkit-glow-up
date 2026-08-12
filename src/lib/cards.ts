@@ -99,7 +99,27 @@ export async function fetchPublicCard(slug: string) {
   };
 }
 
-export function vcard(card: Card) {
+const socialType = (url: string) => {
+  const u = url.toLowerCase();
+  if (u.includes("instagram")) return "instagram";
+  if (u.includes("facebook") || u.includes("fb.com")) return "facebook";
+  if (u.includes("linkedin")) return "linkedin";
+  if (u.includes("twitter") || u.includes("x.com")) return "twitter";
+  if (u.includes("youtube") || u.includes("youtu.be")) return "youtube";
+  if (u.includes("wa.me") || u.includes("whatsapp")) return "whatsapp";
+  return "website";
+};
+
+export function vcard(card: Card, links: { url: string; title?: string }[] = []) {
+  const extras = links
+    .filter((l) => l.url?.trim())
+    .flatMap((l) => {
+      const type = socialType(l.url);
+      return [
+        `X-SOCIALPROFILE;TYPE=${type}:${l.url}`,
+        `URL;TYPE=${l.title?.replace(/[;:,]/g, " ") || type}:${l.url}`,
+      ];
+    });
   return [
     "BEGIN:VCARD",
     "VERSION:3.0",
@@ -110,11 +130,18 @@ export function vcard(card: Card) {
     card.whatsapp && card.whatsapp !== card.phone
       ? `TEL;TYPE=WORK,VOICE:${card.whatsapp}`
       : "",
+    card.whatsapp
+      ? `X-SOCIALPROFILE;TYPE=whatsapp:https://wa.me/${card.whatsapp.replace(/[^\d]/g, "")}`
+      : "",
+    card.whatsapp
+      ? `URL;TYPE=WhatsApp:https://wa.me/${card.whatsapp.replace(/[^\d]/g, "")}`
+      : "",
     card.email ? `EMAIL:${card.email}` : "",
-    card.website ? `URL:${card.website}` : "",
+    card.website ? `URL;TYPE=Website:${card.website}` : "",
     card.address ? `ADR:;;${card.address};;;;` : "",
     card.photo_url ? `PHOTO;VALUE=URI:${card.photo_url}` : "",
     card.tagline ? `NOTE:${card.tagline.replace(/\n/g, " ")}` : "",
+    ...extras,
     `X-SOCIALPROFILE;TYPE=glinkit:https://glinkit.com/${card.slug}`,
     `REV:${new Date().toISOString()}`,
     "END:VCARD",
