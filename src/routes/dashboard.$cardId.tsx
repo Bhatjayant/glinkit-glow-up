@@ -403,7 +403,12 @@ function EditCardPage() {
           </div>
         </div>
 
-        <section className="surface-panel mt-8 space-y-4 rounded-2xl p-6">
+        <TemplateGallery
+          onApply={(t) => applyTemplate.mutate(t)}
+          applyingId={appliedTemplate}
+        />
+
+        <section className="surface-panel mt-6 space-y-4 rounded-2xl p-6">
           <h2 className="font-display text-lg font-semibold">Profile</h2>
           <div>
             <p className="mb-2 text-xs font-medium text-muted-foreground">Card appearance</p>
@@ -449,6 +454,14 @@ function EditCardPage() {
             value={form.tagline ?? ""}
             max={160}
             onChange={(v) => set({ tagline: v })}
+            action={
+              <AiImprove
+                field="tagline"
+                text={form.tagline ?? ""}
+                context={`${form.display_name} · ${form.job_title ?? ""} · ${form.company ?? ""}`}
+                onResult={(v) => set({ tagline: v.slice(0, 160) })}
+              />
+            }
           />
           <Field
             label="About"
@@ -456,6 +469,14 @@ function EditCardPage() {
             value={form.about ?? ""}
             max={2000}
             onChange={(v) => set({ about: v })}
+            action={
+              <AiImprove
+                field="about"
+                text={form.about ?? ""}
+                context={`${form.display_name} · ${form.job_title ?? ""} · ${form.company ?? ""} · ${form.tagline ?? ""}`}
+                onResult={(v) => set({ about: v.slice(0, 2000) })}
+              />
+            }
           />
           <Field
             label="Photo URL"
@@ -569,6 +590,16 @@ function EditCardPage() {
                     value={p.description ?? ""}
                     max={500}
                     onChange={(v) => updateProduct.mutate({ id: p.id, patch: { description: v } })}
+                    action={
+                      <AiImprove
+                        field="product"
+                        text={p.description ?? ""}
+                        context={`${p.name} · sold by ${form.display_name} ${form.company ?? ""}`}
+                        onResult={(v) =>
+                          updateProduct.mutate({ id: p.id, patch: { description: v.slice(0, 500) } })
+                        }
+                      />
+                    }
                   />
                 </div>
                 <div className="mt-3 flex flex-wrap items-center gap-4 text-xs">
