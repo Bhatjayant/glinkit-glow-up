@@ -465,7 +465,7 @@ function PublicCardPage() {
                 L.tiles === "list"
                   ? "mt-6 grid grid-cols-1"
                   : L.tiles === "pill"
-                    ? "mt-6 flex flex-wrap gap-2"
+                    ? `mt-6 flex flex-wrap gap-2 ${L.align === "center" ? "justify-center" : ""}`
                     : "mt-6 grid grid-cols-4 gap-2.5"
               }
             >
