@@ -71,18 +71,33 @@ function ActionTile({
   icon: Icon,
   label,
   onClick,
+  shape = "tile",
 }: {
   href?: string;
   icon: typeof Phone;
   label: string;
   onClick?: () => void;
+  shape?: "tile" | "circle" | "pill" | "list";
 }) {
+  const base = "group font-medium transition-all hover:-translate-y-0.5";
   const cls =
-    "group flex flex-col items-center gap-2 rounded-2xl border border-primary/20 bg-primary/[0.06] px-2 py-3 text-center text-[11px] font-medium transition-all hover:-translate-y-0.5 hover:border-primary/60 hover:bg-primary/12 hover:shadow-[0_10px_24px_-14px_var(--primary)]";
+    shape === "circle"
+      ? `${base} flex flex-col items-center gap-2 text-center text-[11px]`
+      : shape === "pill"
+        ? `${base} flex items-center gap-2 rounded-full border border-primary/25 bg-primary/[0.06] px-3.5 py-2 text-xs hover:border-primary/60`
+        : shape === "list"
+          ? `${base} flex items-center gap-3 rounded-none border-b border-border/70 px-1 py-3 text-sm hover:translate-y-0 hover:border-primary/60`
+          : `${base} flex flex-col items-center gap-2 rounded-2xl border border-primary/20 bg-primary/[0.06] px-2 py-3 text-center text-[11px] hover:border-primary/60 hover:bg-primary/12 hover:shadow-[0_10px_24px_-14px_var(--primary)]`;
+  const iconCls =
+    shape === "circle"
+      ? "grid h-12 w-12 place-items-center rounded-full border border-primary/35 bg-primary/12 text-primary shadow-[0_10px_22px_-16px_var(--primary)] transition-colors group-hover:bg-primary/25"
+      : shape === "pill" || shape === "list"
+        ? "grid h-7 w-7 shrink-0 place-items-center rounded-full bg-primary/15 text-primary"
+        : "grid h-9 w-9 place-items-center rounded-full border border-primary/30 bg-primary/10 text-primary transition-colors group-hover:bg-primary/20";
   const inner = (
     <>
-      <span className="grid h-9 w-9 place-items-center rounded-full border border-primary/30 bg-primary/10 text-primary transition-colors group-hover:bg-primary/20">
-        <Icon className="h-4 w-4" />
+      <span className={iconCls}>
+        <Icon className={shape === "circle" ? "h-5 w-5" : "h-4 w-4"} />
       </span>
       <span className="leading-none">{label}</span>
     </>
