@@ -196,6 +196,7 @@ function EditCardPage() {
         upi_id: form.upi_id ?? "",
         bank_details: form.bank_details ?? "",
         theme: form.theme === "light" ? "light" : "dark",
+        bg_style: form.bg_style ?? "classic",
       });
       if (!parsed.success) throw new Error(parsed.error.issues[0]?.message ?? "Check your details");
       const { error } = await supabase
@@ -238,6 +239,7 @@ function EditCardPage() {
         upi_id: current.upi_id ?? "",
         bank_details: current.bank_details ?? "",
         theme: current.theme === "light" ? "light" : "dark",
+        bg_style: current.bg_style ?? "classic",
       });
       if (!parsed.success) return;
       setAutoStatus("saving");
