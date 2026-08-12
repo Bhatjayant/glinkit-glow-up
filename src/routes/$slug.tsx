@@ -166,6 +166,20 @@ function PublicCardPage() {
   const images = media.filter((m) => m.kind === "image");
   const videos = media.filter((m) => m.kind === "youtube");
   const pdfs = media.filter((m) => m.kind === "pdf");
+  const isLight = card.theme === "light";
+
+  const contactLink = (text: string) => {
+    if (card.whatsapp) return waLink(card.whatsapp, text);
+    if (card.email)
+      return `mailto:${card.email}?subject=${encodeURIComponent("Enquiry")}&body=${encodeURIComponent(text)}`;
+    if (card.phone) return `tel:${card.phone}`;
+    return null;
+  };
+
+  const buyLink = (name: string, amount: number | null) => {
+    if (card.upi_id) return upiPayUrl(card.upi_id, card.display_name, amount, `${name} payment`);
+    return contactLink(`Hi ${card.display_name}, I want to buy ${name}.`);
+  };
 
   const saveContact = () => {
     const blob = new Blob([vcard(card)], { type: "text/vcard" });
@@ -192,7 +206,7 @@ function PublicCardPage() {
   };
 
   return (
-    <div className="glow-emerald">
+    <div className={isLight ? "card-theme-light" : "glow-emerald"}>
       <div className="mx-auto max-w-md px-4 py-10">
         <div className="surface-panel overflow-hidden rounded-[2rem]">
           <div className="relative h-28 bg-gradient-to-br from-primary/30 via-primary/10 to-transparent">
@@ -304,34 +318,32 @@ function PublicCardPage() {
                           )}
                         </div>
                         <div className="mt-3 flex flex-wrap gap-2">
-                          {p.allow_buy && card.upi_id && (
-                            <Button size="sm" variant="gold" asChild>
-                              <a
-                                href={upiPayUrl(
-                                  card.upi_id,
-                                  card.display_name,
-                                  p.offer_price ?? p.mrp,
-                                  `${p.name} payment`,
-                                )}
-                              >
-                                Buy now
-                              </a>
-                            </Button>
-                          )}
-                          {p.allow_enquiry && card.whatsapp && (
-                            <Button size="sm" variant="goldOutline" asChild>
-                              <a
-                                href={waLink(
-                                  card.whatsapp,
-                                  `Hi ${card.display_name}, I'd like to enquire about ${p.name}.`,
-                                )}
-                                target="_blank"
-                                rel="noreferrer"
-                              >
-                                Enquire
-                              </a>
-                            </Button>
-                          )}
+                          {p.allow_buy &&
+                            (() => {
+                              const href = buyLink(p.name, p.offer_price ?? p.mrp);
+                              if (!href) return null;
+                              return (
+                                <Button size="sm" variant="gold" asChild>
+                                  <a href={href} target="_blank" rel="noreferrer">
+                                    Buy now
+                                  </a>
+                                </Button>
+                              );
+                            })()}
+                          {p.allow_enquiry &&
+                            (() => {
+                              const href = contactLink(
+                                `Hi ${card.display_name}, I'd like to enquire about ${p.name}.`,
+                              );
+                              if (!href) return null;
+                              return (
+                                <Button size="sm" variant="goldOutline" asChild>
+                                  <a href={href} target="_blank" rel="noreferrer">
+                                    Enquire
+                                  </a>
+                                </Button>
+                              );
+                            })()}
                         </div>
                       </li>
                     );
