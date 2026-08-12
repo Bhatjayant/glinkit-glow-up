@@ -152,6 +152,7 @@ export type Database = {
           email: string | null
           id: string
           job_title: string
+          layout: string
           logo_url: string | null
           maps_url: string | null
           owner_id: string
@@ -178,6 +179,7 @@ export type Database = {
           email?: string | null
           id?: string
           job_title?: string
+          layout?: string
           logo_url?: string | null
           maps_url?: string | null
           owner_id: string
@@ -204,6 +206,7 @@ export type Database = {
           email?: string | null
           id?: string
           job_title?: string
+          layout?: string
           logo_url?: string | null
           maps_url?: string | null
           owner_id?: string
