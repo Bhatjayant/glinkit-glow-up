@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { slugify, type Card, type Media, type Product } from "@/lib/cards";
 import { TemplateGallery } from "@/components/dashboard/TemplateGallery";
+import { BackgroundPicker } from "@/components/dashboard/BackgroundPicker";
 import { AiImprove } from "@/components/dashboard/AiImprove";
 import type { CardTemplate } from "@/lib/card-templates";
 
@@ -330,6 +331,7 @@ function EditCardPage() {
         tagline: keep(form.tagline, t.patch.tagline),
         about: keep(form.about, t.patch.about),
         theme: t.theme,
+        bg_style: t.bg_style ?? "classic",
       };
       const { error } = await supabase.from("cards").update(patch).eq("id", cardId);
       if (error) throw error;
@@ -428,6 +430,11 @@ function EditCardPage() {
               ))}
             </div>
           </div>
+          <BackgroundPicker
+            value={form.bg_style}
+            theme={form.theme === "light" ? "light" : "dark"}
+            onChange={(id) => set({ bg_style: id })}
+          />
           <Field
             label="Card link (glinkit.com/…)"
             value={form.slug}
