@@ -659,6 +659,8 @@ function EditCardPage() {
               <option value="image">Image</option>
               <option value="youtube">YouTube</option>
               <option value="pdf">PDF</option>
+              <option value="link">Link (social / other)</option>
+              <option value="highlight">Speciality (title only)</option>
             </select>
             <input
               className={`${inputCls} sm:col-span-2`}
