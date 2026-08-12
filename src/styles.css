@@ -213,8 +213,9 @@
   background: var(--gradient-emerald);
 }
 
-/* --- Light ivory variant for public visiting cards --- */
-.card-theme-light {
+/* --- Light ivory variant (site-wide toggle + per-card theme) --- */
+.card-theme-light,
+.theme-light {
   --background: oklch(0.985 0.012 100);
   --foreground: oklch(0.24 0.03 162);
   --card: oklch(1 0 0);
