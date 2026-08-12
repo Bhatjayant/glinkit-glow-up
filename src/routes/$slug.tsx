@@ -194,6 +194,10 @@ function LeadForm({ card }: { card: Card }) {
 function PublicCardPage() {
   const { slug } = Route.useParams();
   const [qrOpen, setQrOpen] = useState(false);
+  const [layoutOverride, setLayoutOverride] = useState<string | null>(null);
+  useEffect(() => {
+    setLayoutOverride(new URLSearchParams(window.location.search).get("layout"));
+  }, []);
   const [lightbox, setLightbox] = useState<string | null>(null);
   const { data, isLoading } = useQuery({
     queryKey: ["public-card", slug],
@@ -216,10 +220,6 @@ function PublicCardPage() {
   const links = media.filter((m) => m.kind === "link");
   const highlights = media.filter((m) => m.kind === "highlight");
   const isLight = card.theme === "light";
-  const layoutOverride =
-    typeof window !== "undefined"
-      ? new URLSearchParams(window.location.search).get("layout")
-      : null;
   const L = getCardLayout(layoutOverride ?? card.layout);
   const logo = card.logo_url ? (
     <img
