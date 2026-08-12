@@ -1,4 +1,5 @@
 import type { CardTemplate } from "@/lib/card-templates";
+import { backgroundCss, getCardBackground } from "@/lib/card-backgrounds";
 
 const skin = (theme: "dark" | "light") =>
   theme === "light"
@@ -28,6 +29,7 @@ export function TemplatePreview({
   size?: "sm" | "lg";
 }) {
   const c = skin(template.theme);
+  const bg = getCardBackground(template.bg_style);
   const products = template.products.slice(0, size === "lg" ? 3 : 2);
   const centred = template.category === "Minimal" || template.category === "Creative";
   const pad = size === "lg" ? 18 : 12;
@@ -36,9 +38,23 @@ export function TemplatePreview({
   return (
     <div
       aria-hidden
-      className="overflow-hidden rounded-xl border"
-      style={{ background: c.bg, borderColor: c.line, padding: pad, color: c.text }}
+      className="relative overflow-hidden rounded-xl border"
+      style={{
+        background: backgroundCss(template.bg_style, template.theme),
+        borderColor: c.line,
+        padding: pad,
+        color: c.text,
+      }}
     >
+      {bg.shimmer && (
+        <span
+          className="animate-mild-sheen pointer-events-none absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(115deg, transparent 35%, rgba(224,181,88,0.18) 50%, transparent 65%)",
+          }}
+        />
+      )}
       {/* header */}
       <div
         className="flex items-center gap-2"

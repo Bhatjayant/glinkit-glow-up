@@ -1,0 +1,1 @@
+ALTER TABLE public.cards ADD COLUMN IF NOT EXISTS bg_style text NOT NULL DEFAULT 'classic';

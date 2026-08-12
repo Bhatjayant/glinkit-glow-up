@@ -22,6 +22,7 @@ export type Card = {
   published: boolean;
   view_count: number;
   theme?: string | null;
+  bg_style?: string | null;
 };
 
 export type Product = {
