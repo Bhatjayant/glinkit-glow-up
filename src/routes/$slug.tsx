@@ -392,24 +392,34 @@ function PublicCardPage() {
 
             {products.length > 0 && (
               <section className="mt-8">
-                <h2 className="font-display text-sm font-semibold tracking-wide uppercase">
-                  Products & services
-                </h2>
+                <SectionHeading>Products & services</SectionHeading>
                 <ul className="mt-3 space-y-3">
                   {products.map((p) => {
                     const off = discountPct(p.mrp, p.offer_price);
                     return (
-                      <li key={p.id} className="rounded-2xl border border-border p-4">
+                      <li
+                        key={p.id}
+                        className="overflow-hidden rounded-2xl border border-border bg-primary/[0.03] p-4 transition-colors hover:border-primary/40"
+                      >
                         {p.image_url && (
-                          <img
-                            src={p.image_url}
-                            alt={p.name}
-                            className="mb-3 h-36 w-full rounded-xl object-cover"
-                          />
+                          <button
+                            type="button"
+                            onClick={() => setLightbox(p.image_url)}
+                            className="mb-3 block w-full"
+                          >
+                            <img
+                              src={p.image_url}
+                              alt={p.name}
+                              loading="lazy"
+                              className="h-40 w-full rounded-xl object-cover"
+                            />
+                          </button>
                         )}
-                        <p className="text-sm font-semibold">{p.name}</p>
+                        <p className="font-display text-sm font-semibold">{p.name}</p>
                         {p.description && (
-                          <p className="mt-1 text-xs text-muted-foreground">{p.description}</p>
+                          <p className="mt-1 text-xs leading-relaxed whitespace-pre-line text-muted-foreground">
+                            {p.description}
+                          </p>
                         )}
                         <div className="mt-2 flex flex-wrap items-baseline gap-2">
                           {p.offer_price != null && (
@@ -468,18 +478,17 @@ function PublicCardPage() {
 
             {images.length > 0 && (
               <section className="mt-8">
-                <h2 className="font-display text-sm font-semibold tracking-wide uppercase">
-                  Gallery
-                </h2>
+                <SectionHeading>Gallery</SectionHeading>
                 <div className="mt-3 grid grid-cols-3 gap-2">
                   {images.map((m) => (
-                    <img
-                      key={m.id}
-                      src={m.url}
-                      alt={m.title || "Gallery image"}
-                      loading="lazy"
-                      className="aspect-square w-full rounded-xl border border-border object-cover"
-                    />
+                    <button key={m.id} type="button" onClick={() => setLightbox(m.url)}>
+                      <img
+                        src={m.url}
+                        alt={m.title || "Gallery image"}
+                        loading="lazy"
+                        className="aspect-square w-full rounded-xl border border-border object-cover transition-transform hover:scale-[1.03]"
+                      />
+                    </button>
                   ))}
                 </div>
               </section>
@@ -487,9 +496,7 @@ function PublicCardPage() {
 
             {videos.length > 0 && (
               <section className="mt-8 space-y-3">
-                <h2 className="font-display text-sm font-semibold tracking-wide uppercase">
-                  Videos
-                </h2>
+                <SectionHeading>Videos</SectionHeading>
                 {videos.map((m) => (
                   <a
                     key={m.id}
@@ -507,9 +514,7 @@ function PublicCardPage() {
 
             {pdfs.length > 0 && (
               <section className="mt-8 space-y-3">
-                <h2 className="font-display text-sm font-semibold tracking-wide uppercase">
-                  Brochures
-                </h2>
+                <SectionHeading>Brochures</SectionHeading>
                 {pdfs.map((m) => (
                   <a
                     key={m.id}
@@ -527,9 +532,7 @@ function PublicCardPage() {
 
             {(card.upi_id || card.bank_details) && (
               <section className="mt-8 rounded-2xl border border-primary/25 bg-primary/5 p-4">
-                <h2 className="font-display text-sm font-semibold tracking-wide uppercase">
-                  Payments
-                </h2>
+                <SectionHeading>Payments</SectionHeading>
                 {card.upi_id && (
                   <>
                     <p className="mt-2 text-sm">UPI: {card.upi_id}</p>
@@ -551,11 +554,73 @@ function PublicCardPage() {
             <LeadForm card={card} />
 
             <p className="mt-8 text-center text-[11px] text-muted-foreground">
-              {card.view_count + 1} visits · Powered by Glinkit
+              Powered by <span className="text-primary">Glinkit</span> · Endless Opportunities
             </p>
           </div>
         </div>
       </div>
+
+      {/* sticky quick bar */}
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-primary/20 bg-background/85 px-4 py-3 backdrop-blur-md">
+        <div className="mx-auto flex max-w-md gap-2">
+          {card.phone && (
+            <Button variant="goldOutline" className="flex-1" asChild>
+              <a href={`tel:${card.phone}`}>
+                <Phone className="mr-1.5 h-4 w-4" /> Call
+              </a>
+            </Button>
+          )}
+          {card.whatsapp && (
+            <Button variant="gold" className="flex-1" asChild>
+              <a
+                href={waLink(card.whatsapp, `Hi ${card.display_name}, I saw your Glinkit card.`)}
+                target="_blank"
+                rel="noreferrer"
+              >
+                <MessageCircle className="mr-1.5 h-4 w-4" /> WhatsApp
+              </a>
+            </Button>
+          )}
+          <Button variant="goldOutline" className="flex-1" onClick={saveContact}>
+            <Download className="mr-1.5 h-4 w-4" /> Save
+          </Button>
+        </div>
+      </div>
+
+      <Dialog open={qrOpen} onOpenChange={setQrOpen}>
+        <DialogContent className="max-w-xs">
+          <DialogHeader>
+            <DialogTitle className="font-display">Scan to open this card</DialogTitle>
+            <DialogDescription>Point any phone camera at the code.</DialogDescription>
+          </DialogHeader>
+          <div className="mx-auto rounded-2xl bg-white p-4">
+            <QRCodeSVG
+              value={typeof window === "undefined" ? "" : window.location.href}
+              size={200}
+              level="M"
+            />
+          </div>
+          <Button variant="goldOutline" onClick={share}>
+            <Share2 className="mr-2 h-4 w-4" /> Share link
+          </Button>
+        </DialogContent>
+      </Dialog>
+
+      {lightbox && (
+        <button
+          type="button"
+          aria-label="Close image"
+          onClick={() => setLightbox(null)}
+          className="fixed inset-0 z-50 grid place-items-center bg-background/90 p-6 backdrop-blur"
+        >
+          <X className="absolute top-5 right-5 h-5 w-5 text-primary" />
+          <img
+            src={lightbox}
+            alt="Preview"
+            className="max-h-[80vh] w-auto rounded-2xl border border-primary/30 object-contain"
+          />
+        </button>
+      )}
     </div>
   );
 }
