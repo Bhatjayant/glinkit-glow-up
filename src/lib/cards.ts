@@ -107,9 +107,16 @@ export function vcard(card: Card) {
     `TITLE:${card.job_title}`,
     `ORG:${card.company}`,
     card.phone ? `TEL;TYPE=CELL:${card.phone}` : "",
+    card.whatsapp && card.whatsapp !== card.phone
+      ? `TEL;TYPE=WORK,VOICE:${card.whatsapp}`
+      : "",
     card.email ? `EMAIL:${card.email}` : "",
     card.website ? `URL:${card.website}` : "",
     card.address ? `ADR:;;${card.address};;;;` : "",
+    card.photo_url ? `PHOTO;VALUE=URI:${card.photo_url}` : "",
+    card.tagline ? `NOTE:${card.tagline.replace(/\n/g, " ")}` : "",
+    `X-SOCIALPROFILE;TYPE=glinkit:https://glinkit.com/${card.slug}`,
+    `REV:${new Date().toISOString()}`,
     "END:VCARD",
   ]
     .filter(Boolean)
