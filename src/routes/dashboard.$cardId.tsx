@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -8,6 +8,9 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { slugify, type Card, type Media, type Product } from "@/lib/cards";
+import { TemplateGallery } from "@/components/dashboard/TemplateGallery";
+import { AiImprove } from "@/components/dashboard/AiImprove";
+import type { CardTemplate } from "@/lib/card-templates";
 
 export const Route = createFileRoute("/dashboard/$cardId")({
   head: () => ({
@@ -57,6 +60,7 @@ function Field({
   textarea,
   max,
   placeholder,
+  action,
 }: {
   label: string;
   value: string;
@@ -64,10 +68,14 @@ function Field({
   textarea?: boolean;
   max?: number;
   placeholder?: string;
+  action?: ReactNode;
 }) {
   return (
     <label className="block">
-      <span className="mb-1.5 block text-xs font-medium text-muted-foreground">{label}</span>
+      <span className="mb-1.5 flex items-center justify-between gap-2">
+        <span className="text-xs font-medium text-muted-foreground">{label}</span>
+        {action}
+      </span>
       {textarea ? (
         <textarea
           className={inputCls}
