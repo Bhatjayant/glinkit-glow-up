@@ -46,7 +46,6 @@ import {
   sectionGap,
   type SectionKey,
 } from "@/lib/card-layouts";
-import { resolveCta } from "@/lib/profile";
 import {
   discountPct,
   externalUrl,
