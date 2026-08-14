@@ -275,9 +275,9 @@ function DashboardPage() {
                 <CompletionCard
                   card={primary}
                   compact
-                  services={content?.services}
-                  products={content?.products}
-                  media={content?.media}
+                  services={content?.services ?? []}
+                  products={content?.products ?? []}
+                  media={content?.media ?? []}
                 />
               </div>
             )}
