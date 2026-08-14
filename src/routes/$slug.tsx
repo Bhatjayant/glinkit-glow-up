@@ -338,7 +338,11 @@ function PublicCardPage() {
       <section key="services" className={gap}>
         <SectionHeading icon={Sparkles}>What I do</SectionHeading>
         <ul className="mt-4 space-y-3">
-          {services.map((s) => (
+          {services.map((s) => {
+            const sHref =
+              externalUrl(s.cta_url) ||
+              contactLink(`Hi ${firstName}, I'd like to know about ${s.title}.`);
+            return (
             <li
               key={s.id}
               className="overflow-hidden rounded-2xl border border-border bg-primary/[0.035] p-4 transition-colors hover:border-primary/40"
@@ -359,13 +363,9 @@ function PublicCardPage() {
                       {s.description}
                     </p>
                   )}
-                  {(s.cta_label || s.cta_url) && (
+                  {sHref && (
                     <a
-                      href={
-                        externalUrl(s.cta_url) ||
-                        contactLink(`Hi ${firstName}, I'd like to know about ${s.title}.`) ||
-                        undefined
-                      }
+                      href={sHref}
                       target="_blank"
                       rel="noreferrer"
                       onClick={() => track("service_click", s.title)}
@@ -377,7 +377,8 @@ function PublicCardPage() {
                 </div>
               </div>
             </li>
-          ))}
+            );
+          })}
         </ul>
       </section>
     );
