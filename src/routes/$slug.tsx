@@ -448,7 +448,7 @@ function PublicCardPage() {
 
   if (showProducts)
     sections.products = (
-      <section key="products" ref={offerRef} className={gap}>
+      <section key="products" className={gap}>
         <SectionHeading>What I offer</SectionHeading>
         <ul className="mt-3 space-y-3">
           {products.map((p) => {
