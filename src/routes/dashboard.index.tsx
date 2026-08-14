@@ -1,12 +1,23 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ExternalLink, Eye, Plus, Trash2 } from "lucide-react";
+import {
+  BarChart3,
+  CalendarClock,
+  ExternalLink,
+  Eye,
+  Handshake,
+  Plus,
+  Trash2,
+  Users,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { slugify, type Card } from "@/lib/cards";
+import { STATUS_CLASSES, STATUS_LABELS, interestLabel, type Lead, type LeadStatus } from "@/lib/leads";
+import { SOURCE_LABELS, type TrafficSource } from "@/lib/analytics";
 
 const title = "My cards — Glinkit dashboard";
 const description = "Create, edit and publish your Glinkit digital visiting cards.";
@@ -69,6 +80,66 @@ function DashboardPage() {
     onError: (e) => toast.error(e instanceof Error ? e.message : "Could not create card"),
   });
 
+  const cardIds = cards.map((c) => c.id);
+
+  const { data: stats } = useQuery({
+    queryKey: ["dash-stats", cardIds.join(",")],
+    enabled: cardIds.length > 0,
+    queryFn: async () => {
+      const since = new Date(Date.now() - 30 * 864e5).toISOString();
+      const [events, leads, bookings] = await Promise.all([
+        supabase
+          .from("card_events")
+          .select("event_type, source, created_at, card_id")
+          .in("card_id", cardIds)
+          .gte("created_at", since)
+          .order("created_at", { ascending: false })
+          .limit(5000),
+        supabase
+          .from("card_leads")
+          .select("*")
+          .in("card_id", cardIds)
+          .eq("archived", false)
+          .order("created_at", { ascending: false })
+          .limit(200),
+        supabase
+          .from("card_bookings")
+          .select("id, status, slot_date, slot_time, name, card_id")
+          .in("card_id", cardIds)
+          .order("created_at", { ascending: false })
+          .limit(200),
+      ]);
+      if (events.error) throw events.error;
+      if (leads.error) throw leads.error;
+      if (bookings.error) throw bookings.error;
+      const rows = (events.data ?? []) as {
+        event_type: string;
+        source: string;
+        created_at: string;
+      }[];
+      const count = (type: string) => rows.filter((r) => r.event_type === type).length;
+      const views = count("view");
+      return {
+        rows,
+        views,
+        saves: count("save_contact"),
+        connects: count("connect"),
+        engagement: views ? Math.round(((rows.length - views) / views) * 100) : 0,
+        leads: (leads.data ?? []) as Lead[],
+        bookings: (bookings.data ?? []) as {
+          id: string;
+          status: string;
+          slot_date: string;
+          slot_time: string;
+          name: string;
+        }[],
+      };
+    },
+  });
+
+  const primary = cards[0];
+  const pendingBookings = (stats?.bookings ?? []).filter((b) => b.status === "pending").length;
+
   const remove = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase.from("cards").delete().eq("id", id);
@@ -85,7 +156,7 @@ function DashboardPage() {
       <div className="mx-auto max-w-4xl">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <h1 className="font-display text-3xl font-bold">My cards</h1>
+            <h1 className="font-display text-3xl font-bold">Overview</h1>
             <p className="mt-1 text-sm text-muted-foreground">
               Signed in as {user?.email ?? "…"}
             </p>
@@ -107,6 +178,130 @@ function DashboardPage() {
             </Button>
           </div>
         </div>
+
+        {cards.length > 0 && (
+          <>
+            <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+              {[
+                { label: "Profile views", value: stats?.views ?? 0, icon: Eye },
+                { label: "Contact saves", value: stats?.saves ?? 0, icon: Handshake },
+                { label: "Connections", value: stats?.connects ?? 0, icon: Users },
+                { label: "Leads", value: stats?.leads.length ?? 0, icon: Users },
+                { label: "Bookings", value: stats?.bookings.length ?? 0, icon: CalendarClock },
+                { label: "Engagement", value: `${stats?.engagement ?? 0}%`, icon: BarChart3 },
+              ].map((s) => (
+                <div
+                  key={s.label}
+                  className="surface-panel rounded-2xl p-4"
+                >
+                  <s.icon className="h-4 w-4 text-primary" />
+                  <p className="font-display mt-2 text-2xl font-bold">{s.value}</p>
+                  <p className="text-[11px] text-muted-foreground">{s.label}</p>
+                </div>
+              ))}
+            </div>
+            <p className="mt-2 text-[11px] text-muted-foreground">
+              Live activity from the last 30 days
+              {pendingBookings > 0 ? ` · ${pendingBookings} booking request(s) awaiting your reply` : ""}
+            </p>
+
+            {primary && (
+              <div className="mt-5 flex flex-wrap gap-2">
+                <Button size="sm" variant="gold" asChild>
+                  <Link to="/dashboard/$cardId" params={{ cardId: primary.id }}>
+                    Edit profile
+                  </Link>
+                </Button>
+                <Button size="sm" variant="goldOutline" asChild>
+                  <Link to="/$slug" params={{ slug: primary.slug }}>
+                    View profile
+                  </Link>
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={async () => {
+                    await navigator.clipboard?.writeText(`${window.location.origin}/${primary.slug}`);
+                    toast.success("Profile link copied");
+                  }}
+                >
+                  Share link
+                </Button>
+                <Button size="sm" variant="ghost" asChild>
+                  <Link to="/dashboard/$cardId" params={{ cardId: primary.id }} hash="leads">
+                    Leads & analytics
+                  </Link>
+                </Button>
+              </div>
+            )}
+
+            <div className="mt-8 grid gap-4 lg:grid-cols-2">
+              <section className="surface-panel rounded-2xl p-5">
+                <h2 className="font-display text-base font-semibold">Recent leads</h2>
+                <ul className="mt-3 space-y-2">
+                  {(stats?.leads ?? []).slice(0, 6).map((l) => {
+                    const st = (l.status as LeadStatus) ?? "new";
+                    return (
+                      <li
+                        key={l.id}
+                        className="flex items-center justify-between gap-3 rounded-xl border border-border px-3 py-2.5 text-sm"
+                      >
+                        <span className="min-w-0">
+                          <span className="block truncate font-medium">
+                            {l.name || "Unnamed"}
+                            {l.company ? ` · ${l.company}` : ""}
+                          </span>
+                          <span className="block truncate text-[11px] text-muted-foreground">
+                            {interestLabel(l.interest)} ·{" "}
+                            {SOURCE_LABELS[l.source as TrafficSource] ?? l.source}
+                          </span>
+                        </span>
+                        <span
+                          className={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] ${STATUS_CLASSES[st] ?? ""}`}
+                        >
+                          {STATUS_LABELS[st] ?? l.status}
+                        </span>
+                      </li>
+                    );
+                  })}
+                  {(stats?.leads.length ?? 0) === 0 && (
+                    <li className="text-sm text-muted-foreground">
+                      No leads yet — share your profile link or QR.
+                    </li>
+                  )}
+                </ul>
+              </section>
+
+              <section className="surface-panel rounded-2xl p-5">
+                <h2 className="font-display text-base font-semibold">Recent activity</h2>
+                <ul className="mt-3 space-y-2">
+                  {(stats?.rows ?? []).slice(0, 6).map((r, i) => (
+                    <li
+                      key={`${r.created_at}-${i}`}
+                      className="flex items-center justify-between gap-3 rounded-xl border border-border px-3 py-2.5 text-sm"
+                    >
+                      <span className="capitalize">{r.event_type.replace(/_/g, " ")}</span>
+                      <span className="text-[11px] text-muted-foreground">
+                        {SOURCE_LABELS[r.source as TrafficSource] ?? r.source} ·{" "}
+                        {new Date(r.created_at).toLocaleString("en-IN", {
+                          day: "numeric",
+                          month: "short",
+                          hour: "numeric",
+                          minute: "2-digit",
+                        })}
+                      </span>
+                    </li>
+                  ))}
+                  {(stats?.rows.length ?? 0) === 0 && (
+                    <li className="text-sm text-muted-foreground">
+                      No activity yet. Every view, tap and connect request will appear here.
+                    </li>
+                  )}
+                </ul>
+              </section>
+            </div>
+          </>
+        )}
 
         <div className="surface-panel mt-8 flex flex-wrap items-center gap-3 rounded-2xl p-5">
           <input
