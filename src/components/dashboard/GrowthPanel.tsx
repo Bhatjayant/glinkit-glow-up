@@ -1,0 +1,43 @@
+import { TrendingUp } from "lucide-react";
+
+/** "My growth" — plain-language insights plus exactly one recommendation. */
+export function GrowthPanel({
+  views,
+  saves,
+  connects,
+  leads,
+  recommendation,
+}: {
+  views: number;
+  saves: number;
+  connects: number;
+  leads: number;
+  recommendation: string;
+}) {
+  const rate = views ? Math.round((connects / views) * 1000) / 10 : 0;
+  const lines = [
+    `Your profile was viewed ${views} times in the last 30 days.`,
+    `${saves} ${saves === 1 ? "person" : "people"} saved your contact.`,
+    `${connects} ${connects === 1 ? "person" : "people"} connected with you${leads ? `, ${leads} in your CRM` : ""}.`,
+    `Your connection rate is ${rate}%.`,
+  ];
+
+  return (
+    <section className="surface-panel mt-6 rounded-2xl p-5 sm:p-6">
+      <h2 className="font-display flex items-center gap-2 text-lg font-semibold">
+        <TrendingUp className="h-4.5 w-4.5 text-primary" /> My growth
+      </h2>
+      <ul className="mt-4 space-y-2">
+        {lines.map((l) => (
+          <li key={l} className="text-sm text-muted-foreground">
+            {l}
+          </li>
+        ))}
+      </ul>
+      <p className="mt-4 rounded-xl border border-primary/30 bg-primary/[0.07] p-3 text-xs">
+        <span className="font-medium text-primary">Do this next: </span>
+        {recommendation}
+      </p>
+    </section>
+  );
+}
