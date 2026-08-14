@@ -100,11 +100,11 @@ function ActionTile({
   onTrack,
   shape = "tile",
 }: {
-  href?: string;
+  href?: string | undefined;
   icon: typeof Phone;
   label: string;
-  onClick?: () => void;
-  onTrack?: () => void;
+  onClick?: (() => void) | undefined;
+  onTrack?: (() => void) | undefined;
   shape?: "tile" | "circle" | "pill" | "list";
 }) {
   const base = "group font-medium transition-all hover:-translate-y-0.5";
