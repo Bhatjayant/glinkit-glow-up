@@ -658,9 +658,9 @@ function PublicCardPage() {
           <div className="flex items-start gap-2 sm:gap-3">
             {/* Desktop action rail — part of the card, sticky within the full DVC height so it follows the scroll. */}
             <nav aria-label="Ways to connect" className="hidden self-stretch sm:block">
-              <ul className="sticky top-4 flex flex-col gap-1.5 rounded-full border border-primary/25 bg-background/70 p-1.5">
+              <ul className="sticky top-4 flex flex-col gap-2 rounded-2xl border border-primary/25 bg-background/70 p-2">
                 {rail.map((r) => (
-                  <li key={r.label}>{railItem(r, "h-11 w-11")}</li>
+                  <li key={r.label}>{railItem(r, "desktop")}</li>
                 ))}
               </ul>
             </nav>
@@ -819,7 +819,7 @@ function PublicCardPage() {
             <nav aria-label="Ways to connect" className="mt-4 sm:hidden">
               <ul className="-mx-1 flex flex-wrap gap-2 px-1">
                 {rail.map((r) => (
-                  <li key={r.label}>{railItem(r, "h-10 w-10")}</li>
+                  <li key={r.label}>{railItem(r, "mobile")}</li>
                 ))}
               </ul>
             </nav>
