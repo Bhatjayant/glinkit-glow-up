@@ -31,9 +31,6 @@ export type Card = {
   booking_note?: string | null;
   booking_duration?: number | null;
   booking_slots?: string | null;
-  headline?: string | null;
-  short_bio?: string | null;
-  seo_description?: string | null;
   profile_type?: string | null;
   primary_cta?: string | null;
   primary_cta_label?: string | null;
