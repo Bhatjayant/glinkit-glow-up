@@ -798,34 +798,6 @@ function PublicCardPage() {
 
             {identityBlock}
 
-            {/* Primary actions — never more than three on the first screen. */}
-            <div
-              className={`mt-5 grid gap-2 ${L.ctaStyle === "banner" ? "rounded-2xl border border-primary/25 bg-primary/[0.06] p-3" : ""}`}
-            >
-              {L.ctaStyle !== "quiet" && ctaButton}
-              <div className="grid grid-cols-2 gap-2">
-                <Button variant="goldOutline" className="h-11" onClick={saveContact}>
-                  <Download className="mr-1.5 h-4 w-4" /> Save contact
-                </Button>
-                <Button
-                  variant={L.ctaStyle === "quiet" ? "gold" : "goldOutline"}
-                  className="h-11"
-                  onClick={() => setConnectOpen(true)}
-                >
-                  <Handshake className="mr-1.5 h-4 w-4" /> Connect
-                </Button>
-              </div>
-              {L.ctaStyle === "quiet" && cta.kind !== "connect" && (
-                <button
-                  type="button"
-                  onClick={runCta}
-                  className="mt-0.5 inline-flex items-center justify-center gap-1.5 text-xs font-medium text-primary hover:underline"
-                >
-                  {cta.label} <ArrowRight className="h-3.5 w-3.5" />
-                </button>
-              )}
-            </div>
-
             {/* Mobile: in-card compact action row (no external rail). */}
             <nav aria-label="Ways to connect" className="mt-4 sm:hidden">
               <ul className="-mx-1 flex flex-wrap gap-2 px-1">
