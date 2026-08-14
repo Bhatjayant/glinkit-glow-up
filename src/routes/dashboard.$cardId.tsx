@@ -695,26 +695,9 @@ function EditCardPage() {
           </ul>
         </section>
 
-        <section className="surface-panel mt-6 rounded-2xl p-6">
-          <h2 className="font-display text-lg font-semibold">Enquiries ({leads.length})</h2>
-          <ul className="mt-4 space-y-2">
-            {leads.map((l) => (
-              <li key={l.id} className="rounded-xl border border-border p-3 text-sm">
-                <p className="font-medium">
-                  {l.name} · {l.phone}
-                </p>
-                {l.email && <p className="text-xs text-muted-foreground">{l.email}</p>}
-                {l.message && <p className="mt-1 text-xs text-muted-foreground">{l.message}</p>}
-                <p className="mt-1 text-[11px] text-muted-foreground">
-                  {new Date(l.created_at).toLocaleString("en-IN")}
-                </p>
-              </li>
-            ))}
-            {leads.length === 0 && (
-              <li className="text-sm text-muted-foreground">No enquiries yet.</li>
-            )}
-          </ul>
-        </section>
+        <LeadsCrm cardId={cardId} />
+
+        <AnalyticsPanel cardId={cardId} />
 
         <BookingManager card={form} enabled={Boolean(user)} />
       </div>
