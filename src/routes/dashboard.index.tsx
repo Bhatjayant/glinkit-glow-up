@@ -208,7 +208,11 @@ function DashboardPage() {
                 { label: "Connections", value: stats?.connects ?? 0, icon: Users },
                 { label: "Leads", value: stats?.leads.length ?? 0, icon: Users },
                 { label: "Bookings", value: stats?.bookings.length ?? 0, icon: CalendarClock },
-                { label: "Engagement", value: `${stats?.engagement ?? 0}%`, icon: BarChart3 },
+                {
+                  label: "Awaiting your reply",
+                  value: (stats?.leads ?? []).filter((l) => (l.status ?? "new") === "new").length,
+                  icon: BarChart3,
+                },
               ].map((s) => (
                 <div
                   key={s.label}
