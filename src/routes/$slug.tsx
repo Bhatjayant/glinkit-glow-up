@@ -643,7 +643,7 @@ function PublicCardPage() {
           }}
         />
       )}
-      <div className="relative mx-auto max-w-md px-4 pt-6 pb-32 sm:max-w-lg sm:pt-10 lg:max-w-xl">
+      <div className="relative mx-auto max-w-md pt-6 pr-4 pb-16 pl-16 sm:max-w-lg sm:pt-10 sm:pl-20 lg:max-w-xl">
         <div className={`surface-panel overflow-hidden ${panelRadius(L.panel)}`}>
           {L.hero === "banner" && (
             <div className="relative h-36 overflow-hidden bg-gradient-to-br from-primary/35 via-primary/10 to-transparent">
