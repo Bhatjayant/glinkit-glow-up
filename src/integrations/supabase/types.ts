@@ -14,6 +14,56 @@ export type Database = {
   }
   public: {
     Tables: {
+      card_bookings: {
+        Row: {
+          card_id: string
+          created_at: string
+          email: string
+          id: string
+          name: string
+          phone: string
+          purpose: string
+          slot_date: string
+          slot_time: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          card_id: string
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          phone?: string
+          purpose?: string
+          slot_date: string
+          slot_time?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          card_id?: string
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          phone?: string
+          purpose?: string
+          slot_date?: string
+          slot_time?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "card_bookings_card_id_fkey"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "cards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       card_leads: {
         Row: {
           card_id: string
@@ -146,6 +196,10 @@ export type Database = {
           address: string | null
           bank_details: string | null
           bg_style: string
+          booking_duration: number
+          booking_enabled: boolean
+          booking_note: string
+          booking_slots: string
           company: string
           created_at: string
           display_name: string
@@ -173,6 +227,10 @@ export type Database = {
           address?: string | null
           bank_details?: string | null
           bg_style?: string
+          booking_duration?: number
+          booking_enabled?: boolean
+          booking_note?: string
+          booking_slots?: string
           company?: string
           created_at?: string
           display_name?: string
@@ -200,6 +258,10 @@ export type Database = {
           address?: string | null
           bank_details?: string | null
           bg_style?: string
+          booking_duration?: number
+          booking_enabled?: boolean
+          booking_note?: string
+          booking_slots?: string
           company?: string
           created_at?: string
           display_name?: string
