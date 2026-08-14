@@ -9,6 +9,9 @@ export type Card = {
   company: string;
   tagline: string;
   about: string;
+  headline?: string | null;
+  short_bio?: string | null;
+  seo_description?: string | null;
   photo_url: string | null;
   logo_url: string | null;
   phone: string | null;

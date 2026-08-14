@@ -14,6 +14,35 @@ export type Database = {
   }
   public: {
     Tables: {
+      card_blocked_dates: {
+        Row: {
+          blocked_date: string
+          card_id: string
+          created_at: string
+          id: string
+        }
+        Insert: {
+          blocked_date: string
+          card_id: string
+          created_at?: string
+          id?: string
+        }
+        Update: {
+          blocked_date?: string
+          card_id?: string
+          created_at?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "card_blocked_dates_card_id_fkey"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "cards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       card_bookings: {
         Row: {
           card_id: string
@@ -64,33 +93,95 @@ export type Database = {
           },
         ]
       }
-      card_leads: {
+      card_events: {
         Row: {
           card_id: string
           created_at: string
-          email: string
+          event_type: string
           id: string
-          message: string
-          name: string
-          phone: string
+          label: string
+          source: string
         }
         Insert: {
           card_id: string
           created_at?: string
-          email?: string
+          event_type: string
           id?: string
-          message?: string
-          name?: string
-          phone?: string
+          label?: string
+          source?: string
         }
         Update: {
           card_id?: string
           created_at?: string
-          email?: string
+          event_type?: string
           id?: string
+          label?: string
+          source?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "card_events_card_id_fkey"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "cards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      card_leads: {
+        Row: {
+          archived: boolean
+          card_id: string
+          company: string
+          created_at: string
+          designation: string
+          email: string
+          follow_up_date: string | null
+          id: string
+          interest: string
+          message: string
+          name: string
+          notes: string
+          phone: string
+          source: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          archived?: boolean
+          card_id: string
+          company?: string
+          created_at?: string
+          designation?: string
+          email?: string
+          follow_up_date?: string | null
+          id?: string
+          interest?: string
           message?: string
           name?: string
+          notes?: string
           phone?: string
+          source?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          archived?: boolean
+          card_id?: string
+          company?: string
+          created_at?: string
+          designation?: string
+          email?: string
+          follow_up_date?: string | null
+          id?: string
+          interest?: string
+          message?: string
+          name?: string
+          notes?: string
+          phone?: string
+          source?: string
+          status?: string
+          updated_at?: string
         }
         Relationships: [
           {
@@ -204,6 +295,7 @@ export type Database = {
           created_at: string
           display_name: string
           email: string | null
+          headline: string
           id: string
           job_title: string
           layout: string
@@ -213,9 +305,13 @@ export type Database = {
           phone: string | null
           photo_url: string | null
           published: boolean
+          section_order: Json
+          seo_description: string
+          short_bio: string
           slug: string
           tagline: string
           theme: string
+          timezone: string
           updated_at: string
           upi_id: string | null
           view_count: number
@@ -235,6 +331,7 @@ export type Database = {
           created_at?: string
           display_name?: string
           email?: string | null
+          headline?: string
           id?: string
           job_title?: string
           layout?: string
@@ -244,9 +341,13 @@ export type Database = {
           phone?: string | null
           photo_url?: string | null
           published?: boolean
+          section_order?: Json
+          seo_description?: string
+          short_bio?: string
           slug: string
           tagline?: string
           theme?: string
+          timezone?: string
           updated_at?: string
           upi_id?: string | null
           view_count?: number
@@ -266,6 +367,7 @@ export type Database = {
           created_at?: string
           display_name?: string
           email?: string | null
+          headline?: string
           id?: string
           job_title?: string
           layout?: string
@@ -275,9 +377,13 @@ export type Database = {
           phone?: string | null
           photo_url?: string | null
           published?: boolean
+          section_order?: Json
+          seo_description?: string
+          short_bio?: string
           slug?: string
           tagline?: string
           theme?: string
+          timezone?: string
           updated_at?: string
           upi_id?: string | null
           view_count?: number
@@ -292,18 +398,21 @@ export type Database = {
           email: string | null
           full_name: string | null
           id: string
+          plan: string
         }
         Insert: {
           created_at?: string
           email?: string | null
           full_name?: string | null
           id: string
+          plan?: string
         }
         Update: {
           created_at?: string
           email?: string | null
           full_name?: string | null
           id?: string
+          plan?: string
         }
         Relationships: []
       }
@@ -330,7 +439,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      card_blocked_days: { Args: { _card_id: string }; Returns: string[] }
       card_is_published: { Args: { _card_id: string }; Returns: boolean }
+      card_taken_slots: {
+        Args: { _card_id: string; _date: string }
+        Returns: string[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

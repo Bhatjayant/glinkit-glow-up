@@ -1,9 +1,11 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { CalendarClock, Clock, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { trackEvent } from "@/lib/analytics";
 import { parseSlots, prettyDate, prettyTime, waLink, type Card } from "@/lib/cards";
 
 const schema = z.object({
@@ -28,13 +30,48 @@ function nextDays(count: number) {
   return out;
 }
 
-export function BookingScheduler({ card }: { card: Card }) {
+export function BookingScheduler({ card, slug }: { card: Card; slug: string }) {
   const days = useMemo(() => nextDays(14), []);
   const slots = useMemo(() => parseSlots(card.booking_slots), [card.booking_slots]);
   const [date, setDate] = useState(days[0] ?? "");
   const [time, setTime] = useState(slots[0] ?? "");
   const [form, setForm] = useState({ name: "", phone: "", email: "", purpose: "" });
   const [busy, setBusy] = useState(false);
+
+  const { data: blocked = [] } = useQuery({
+    queryKey: ["card-blocked", card.id],
+    enabled: Boolean(card.booking_enabled),
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("card_blocked_days", { _card_id: card.id });
+      if (error) throw error;
+      return (data ?? []) as string[];
+    },
+  });
+
+  const { data: taken = [], refetch: refetchTaken } = useQuery({
+    queryKey: ["card-taken", card.id, date],
+    enabled: Boolean(card.booking_enabled && date),
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("card_taken_slots", {
+        _card_id: card.id,
+        _date: date,
+      });
+      if (error) throw error;
+      return (data ?? []) as string[];
+    },
+  });
+
+  const openDays = useMemo(() => days.filter((d) => !blocked.includes(d)), [days, blocked]);
+
+  useEffect(() => {
+    if (date && blocked.includes(date)) setDate(openDays[0] ?? "");
+  }, [blocked, date, openDays]);
+
+  useEffect(() => {
+    if (time && taken.includes(time)) {
+      setTime(slots.find((s) => !taken.includes(s)) ?? "");
+    }
+  }, [taken, time, slots]);
 
   if (!card.booking_enabled || slots.length === 0) return null;
 
@@ -57,9 +94,18 @@ export function BookingScheduler({ card }: { card: Card }) {
     });
     setBusy(false);
     if (error) {
-      toast.error("Could not send the request. Please try WhatsApp.");
+      void refetchTaken();
+      toast.error(
+        error.code === "23505" || error.message.toLowerCase().includes("duplicate")
+          ? "That slot was just taken — please pick another time."
+          : error.message.includes("not available") || error.message.includes("future date")
+            ? error.message
+            : "Could not send the request. Please try WhatsApp.",
+      );
       return;
     }
+    void trackEvent(card.id, slug, "booking", `${date} ${time}`);
+    void refetchTaken();
     toast.success("Meeting request sent.");
     const text = `Hi ${card.display_name}, I'd like to book a meeting.\nDate: ${prettyDate(date)}\nTime: ${prettyTime(time)}\nName: ${parsed.data.name}\nPhone: ${parsed.data.phone}${parsed.data.purpose ? `\nPurpose: ${parsed.data.purpose}` : ""}`;
     if (card.whatsapp) window.open(waLink(card.whatsapp, text), "_blank", "noreferrer");
@@ -84,7 +130,7 @@ export function BookingScheduler({ card }: { card: Card }) {
         Choose a day
       </p>
       <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
-        {days.map((d) => (
+        {openDays.map((d) => (
           <button
             key={d}
             type="button"
@@ -104,20 +150,31 @@ export function BookingScheduler({ card }: { card: Card }) {
         Choose a time
       </p>
       <div className="flex flex-wrap gap-2">
-        {slots.map((s) => (
-          <button
-            key={s}
-            type="button"
-            onClick={() => setTime(s)}
-            className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs transition-colors ${
-              time === s
-                ? "border-primary bg-primary/15 text-primary"
-                : "border-border hover:border-primary/50"
-            }`}
-          >
-            <Clock className="h-3 w-3" /> {prettyTime(s)}
-          </button>
-        ))}
+        {slots.map((s) => {
+          const isTaken = taken.includes(s);
+          return (
+            <button
+              key={s}
+              type="button"
+              disabled={isTaken}
+              onClick={() => setTime(s)}
+              className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs transition-colors ${
+                isTaken
+                  ? "cursor-not-allowed border-border/60 text-muted-foreground line-through opacity-60"
+                  : time === s
+                    ? "border-primary bg-primary/15 text-primary"
+                    : "border-border hover:border-primary/50"
+              }`}
+            >
+              <Clock className="h-3 w-3" /> {prettyTime(s)}
+            </button>
+          );
+        })}
+        {slots.every((s) => taken.includes(s)) && (
+          <p className="text-xs text-muted-foreground">
+            All slots booked for this day — try another date.
+          </p>
+        )}
       </div>
 
       <div className="mt-4 space-y-3">

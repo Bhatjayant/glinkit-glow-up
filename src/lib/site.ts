@@ -2,6 +2,8 @@ export const PHONE = "+918808748088";
 export const PHONE_DISPLAY = "+91 88087 48088";
 export const EMAIL = "care@glinkit.com";
 
+export const SITE_URL = "https://glinkit.com";
+
 const WA_TEXT = encodeURIComponent(
   "Hi Glinkit, I'd like a demo of the smart digital business card for my team.",
 );
