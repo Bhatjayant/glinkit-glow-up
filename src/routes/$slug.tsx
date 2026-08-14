@@ -119,7 +119,6 @@ function PublicCardPage() {
   }, []);
   const [lightbox, setLightbox] = useState<string | null>(null);
   const bookingRef = useRef<HTMLDivElement | null>(null);
-  const offerRef = useRef<HTMLDivElement | null>(null);
   const { data, isLoading } = useQuery({
     queryKey: ["public-card", slug],
     queryFn: () => fetchPublicCard(slug),
