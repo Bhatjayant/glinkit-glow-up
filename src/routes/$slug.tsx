@@ -286,12 +286,29 @@ function PublicCardPage() {
   rail.push({ label: "QR code", icon: QrCode, onClick: () => setQrOpen(true) });
   rail.push({ label: "Share", icon: Share2, onClick: share });
 
-  const railItem = (r: RailAction, size: string) => {
-    const cls = `grid ${size} place-items-center rounded-full border transition-all hover:-translate-y-0.5 ${
-      r.primary
-        ? "border-primary bg-primary text-primary-foreground"
-        : "border-primary/25 bg-primary/[0.08] text-primary hover:border-primary/60 hover:bg-primary/20"
-    }`;
+  const railItem = (r: RailAction, variant: "desktop" | "mobile") => {
+    const isDesktop = variant === "desktop";
+    const cls = isDesktop
+      ? `flex flex-col items-center justify-center gap-1 rounded-2xl border px-2 py-2.5 transition-all hover:-translate-y-0.5 ${
+          r.primary
+            ? "border-primary bg-primary text-primary-foreground"
+            : "border-primary/25 bg-primary/[0.08] text-primary hover:border-primary/60 hover:bg-primary/20"
+        }`
+      : `grid h-10 w-10 place-items-center rounded-full border transition-all hover:-translate-y-0.5 ${
+          r.primary
+            ? "border-primary bg-primary text-primary-foreground"
+            : "border-primary/25 bg-primary/[0.08] text-primary hover:border-primary/60 hover:bg-primary/20"
+        }`;
+    const content = (
+      <>
+        <r.icon className={isDesktop ? "h-5 w-5" : "h-4.5 w-4.5"} />
+        {isDesktop && (
+          <span className="max-w-[64px] text-center text-[9px] font-medium leading-tight">
+            {r.label}
+          </span>
+        )}
+      </>
+    );
     return r.href ? (
       <a
         href={r.href}
@@ -302,7 +319,7 @@ function PublicCardPage() {
         onClick={r.onClick}
         className={cls}
       >
-        <r.icon className="h-4.5 w-4.5" />
+        {content}
       </a>
     ) : (
       <button
@@ -312,7 +329,7 @@ function PublicCardPage() {
         onClick={r.onClick}
         className={cls}
       >
-        <r.icon className="h-4.5 w-4.5" />
+        {content}
       </button>
     );
   };
