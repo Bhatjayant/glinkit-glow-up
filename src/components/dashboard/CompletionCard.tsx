@@ -1,5 +1,5 @@
 import { Check, Circle } from "lucide-react";
-import { profileCompletion } from "@/lib/profile";
+import { profileCompletion, type CompletionItem } from "@/lib/profile";
 import type { Card, Media, Product } from "@/lib/cards";
 
 /** Honest progress meter with the next best actions, not a vanity bar. */
@@ -16,17 +16,42 @@ export function CompletionCard({
   services?: { id: string }[];
   compact?: boolean;
 }) {
-  const { percent, items, pending } = profileCompletion(card, {
+  const { percent, pending, essential, recommended, optional, readyToPublish } = profileCompletion(card, {
     products: products ?? [],
     media: media ?? [],
     services: services ?? [],
   });
 
+  const group = (title: string, note: string, list: CompletionItem[]) => (
+    <div key={title}>
+      <p className="text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
+        {title} <span className="normal-case opacity-70">· {note}</span>
+      </p>
+      <ul className="mt-2 grid gap-1.5 sm:grid-cols-2">
+        {list.map((i) => (
+          <li key={i.label} className="flex items-start gap-2 text-xs">
+            {i.done ? (
+              <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
+            ) : (
+              <Circle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground/50" />
+            )}
+            <span className="min-w-0">
+              <span className={i.done ? "text-muted-foreground" : ""}>{i.label}</span>
+              {!i.done && (
+                <span className="block text-[11px] text-muted-foreground">{i.hint}</span>
+              )}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+
   return (
     <section className="surface-panel mt-6 rounded-2xl p-5 sm:p-6">
       <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
         <h2 className="font-display truncate text-lg font-semibold">
-          Your Glinkit is {percent}% ready
+          {readyToPublish ? "Your Glinkit is ready to share" : "Finish the essentials to go live"}
         </h2>
         <span className="font-display shrink-0 text-2xl font-bold text-primary">{percent}%</span>
       </div>
@@ -54,24 +79,11 @@ export function CompletionCard({
           )}
         </ul>
       ) : (
-        <ul className="mt-4 grid gap-1.5 sm:grid-cols-2">
-          {items.map((i) => (
-            <li
-              key={i.label}
-              className={`flex items-start gap-2 text-xs ${i.done ? "text-muted-foreground" : ""}`}
-            >
-              {i.done ? (
-                <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
-              ) : (
-                <Circle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground/60" />
-              )}
-              <span className="min-w-0">
-                <span className={i.done ? "" : "text-foreground"}>{i.label}</span>
-                {!i.done && <span className="block text-[11px] text-muted-foreground">{i.hint}</span>}
-              </span>
-            </li>
-          ))}
-        </ul>
+        <div className="mt-5 space-y-5">
+          {group("Essential", "needed to publish", essential)}
+          {group("Recommended", "helps you win business", recommended)}
+          {group("Optional", "add these whenever you like", optional)}
+        </div>
       )}
     </section>
   );
