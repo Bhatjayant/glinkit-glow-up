@@ -97,55 +97,6 @@ export const Route = createFileRoute("/$slug")({
   component: PublicCardPage,
 });
 
-function ActionTile({
-  href,
-  icon: Icon,
-  label,
-  onClick,
-  onTrack,
-  shape = "tile",
-}: {
-  href?: string | undefined;
-  icon: typeof Phone;
-  label: string;
-  onClick?: (() => void) | undefined;
-  onTrack?: (() => void) | undefined;
-  shape?: "tile" | "circle" | "pill" | "list";
-}) {
-  const base = "group font-medium transition-all hover:-translate-y-0.5";
-  const cls =
-    shape === "circle"
-      ? `${base} flex min-w-0 flex-col items-center gap-2 text-center text-[11px]`
-      : shape === "pill"
-        ? `${base} flex items-center gap-2 rounded-full border border-primary/25 bg-primary/[0.06] px-3.5 py-2.5 text-xs hover:border-primary/60`
-        : shape === "list"
-          ? `${base} flex items-center gap-3 border-b border-border/70 px-1 py-3 text-sm hover:translate-y-0 hover:border-primary/60`
-          : `${base} flex min-w-0 flex-col items-center gap-2 rounded-2xl border border-primary/20 bg-primary/[0.06] px-2 py-3 text-center text-[11px] hover:border-primary/60 hover:bg-primary/12`;
-  const iconCls =
-    shape === "circle"
-      ? "grid h-12 w-12 place-items-center rounded-full border border-primary/35 bg-primary/12 text-primary transition-colors group-hover:bg-primary/25"
-      : shape === "pill" || shape === "list"
-        ? "grid h-7 w-7 shrink-0 place-items-center rounded-full bg-primary/15 text-primary"
-        : "grid h-9 w-9 place-items-center rounded-full border border-primary/30 bg-primary/10 text-primary transition-colors group-hover:bg-primary/20";
-  const inner = (
-    <>
-      <span className={iconCls}>
-        <Icon className={shape === "circle" ? "h-5 w-5" : "h-4 w-4"} />
-      </span>
-      <span className="truncate leading-none">{label}</span>
-    </>
-  );
-  return onClick ? (
-    <button type="button" onClick={onClick} className={cls}>
-      {inner}
-    </button>
-  ) : (
-    <a href={href} target="_blank" rel="noreferrer" className={cls} onClick={onTrack}>
-      {inner}
-    </a>
-  );
-}
-
 function SectionHeading({ icon: Icon, children }: { icon?: typeof Phone; children: string }) {
   return (
     <div className="flex items-center gap-2.5">
