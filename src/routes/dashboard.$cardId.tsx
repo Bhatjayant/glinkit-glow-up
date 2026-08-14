@@ -16,6 +16,10 @@ import { AiProfileWizard } from "@/components/dashboard/AiProfileWizard";
 import { LeadsCrm } from "@/components/dashboard/LeadsCrm";
 import { AnalyticsPanel } from "@/components/dashboard/AnalyticsPanel";
 import { BookingManager } from "@/components/dashboard/BookingManager";
+import { ProfileGoal } from "@/components/dashboard/ProfileGoal";
+import { ServicesEditor, useServices } from "@/components/dashboard/ServicesEditor";
+import { CompletionCard } from "@/components/dashboard/CompletionCard";
+import { ShareHub } from "@/components/dashboard/ShareHub";
 import type { CardTemplate } from "@/lib/card-templates";
 
 export const Route = createFileRoute("/dashboard/$cardId")({
@@ -62,6 +66,11 @@ const cardSchema = z.object({
   theme: z.enum(["dark", "light"]),
   bg_style: z.string().trim().max(40),
   layout: z.string().trim().max(40),
+  profile_type: z.string().trim().max(30),
+  primary_cta: z.string().trim().max(30),
+  primary_cta_label: z.string().trim().max(40),
+  primary_cta_url: z.string().trim().max(500),
+  offer_mode: z.string().trim().max(20),
 });
 
 function Field({
@@ -164,6 +173,8 @@ function EditCardPage() {
     },
   });
 
+  const { data: services = [] } = useServices(cardId, Boolean(user));
+
   const save = useMutation({
     mutationFn: async (publish?: boolean) => {
       if (!form) return;
@@ -190,6 +201,11 @@ function EditCardPage() {
         theme: form.theme === "light" ? "light" : "dark",
         bg_style: form.bg_style ?? "classic",
         layout: form.layout ?? "classic",
+        profile_type: form.profile_type ?? "professional",
+        primary_cta: form.primary_cta ?? "whatsapp",
+        primary_cta_label: form.primary_cta_label ?? "",
+        primary_cta_url: form.primary_cta_url ?? "",
+        offer_mode: form.offer_mode ?? "both",
       });
       if (!parsed.success) throw new Error(parsed.error.issues[0]?.message ?? "Check your details");
       const { error } = await supabase
@@ -237,6 +253,11 @@ function EditCardPage() {
         theme: current.theme === "light" ? "light" : "dark",
         bg_style: current.bg_style ?? "classic",
         layout: current.layout ?? "classic",
+        profile_type: current.profile_type ?? "professional",
+        primary_cta: current.primary_cta ?? "whatsapp",
+        primary_cta_label: current.primary_cta_label ?? "",
+        primary_cta_url: current.primary_cta_url ?? "",
+        offer_mode: current.offer_mode ?? "both",
       });
       if (!parsed.success) return;
       setAutoStatus("saving");
@@ -428,24 +449,36 @@ function EditCardPage() {
             if (Object.keys(patch).length) set(patch);
             if (accepted.services && draft.services.length) {
               void (async () => {
-                const { error } = await supabase.from("card_products").insert(
+                const { error } = await supabase.from("card_services").insert(
                   draft.services.map((s, i) => ({
                     card_id: cardId,
-                    name: s.name.slice(0, 120),
-                    description: s.description.slice(0, 500),
-                    sort_order: products.length + i,
+                    title: s.name.slice(0, 120),
+                    description: s.description.slice(0, 400),
+                    sort_order: services.length + i,
                   })),
                 );
                 if (error) {
                   toast.error("Could not add the services");
                   return;
                 }
-                void qc.invalidateQueries({ queryKey: ["card-products", cardId] });
+                void qc.invalidateQueries({ queryKey: ["card-services", cardId] });
               })();
             }
             toast.success("Applied — review and publish when ready");
           }}
         />
+
+        <CompletionCard card={form} products={products} media={media} services={services} />
+
+        <ProfileGoal card={form} onChange={(patch) => set(patch)} />
+
+        <ServicesEditor
+          cardId={cardId}
+          enabled={Boolean(user)}
+          context={`${form.display_name} · ${form.job_title ?? ""} · ${form.company ?? ""}`}
+        />
+
+        <ShareHub slug={form.slug} name={form.display_name} />
 
         <section className="surface-panel mt-6 space-y-4 rounded-2xl p-6">
           <h2 className="font-display text-lg font-semibold">Profile</h2>
