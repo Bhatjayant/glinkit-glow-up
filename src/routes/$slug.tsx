@@ -90,12 +90,14 @@ function ActionTile({
   icon: Icon,
   label,
   onClick,
+  onTrack,
   shape = "tile",
 }: {
   href?: string;
   icon: typeof Phone;
   label: string;
   onClick?: () => void;
+  onTrack?: () => void;
   shape?: "tile" | "circle" | "pill" | "list";
 }) {
   const base = "group font-medium transition-all hover:-translate-y-0.5";
