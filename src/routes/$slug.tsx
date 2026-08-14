@@ -229,6 +229,7 @@ function PublicCardPage() {
   };
 
   const saveContact = () => {
+    track("save_contact");
     const blob = new Blob([vcard(card, links.map((l) => ({ url: l.url, title: l.title })))], {
       type: "text/vcard",
     });
@@ -241,6 +242,7 @@ function PublicCardPage() {
   };
 
   const share = async () => {
+    track("share");
     const link = window.location.href;
     if (navigator.share) {
       try {
@@ -453,7 +455,13 @@ function PublicCardPage() {
               }
             >
               {card.phone && (
-                <ActionTile href={`tel:${card.phone}`} icon={Phone} label="Call" shape={L.tiles} />
+                <ActionTile
+                  href={`tel:${card.phone}`}
+                  icon={Phone}
+                  label="Call"
+                  shape={L.tiles}
+                  onTrack={() => track("call")}
+                />
               )}
               {card.whatsapp && (
                 <ActionTile
@@ -461,10 +469,17 @@ function PublicCardPage() {
                   icon={MessageCircle}
                   label="WhatsApp"
                   shape={L.tiles}
+                  onTrack={() => track("whatsapp")}
                 />
               )}
               {card.email && (
-                <ActionTile href={`mailto:${card.email}`} icon={Mail} label="Email" shape={L.tiles} />
+                <ActionTile
+                  href={`mailto:${card.email}`}
+                  icon={Mail}
+                  label="Email"
+                  shape={L.tiles}
+                  onTrack={() => track("email")}
+                />
               )}
               {(card.maps_url || card.address) && (
                 <ActionTile
@@ -478,7 +493,13 @@ function PublicCardPage() {
                 />
               )}
               {card.website && (
-                <ActionTile href={card.website} icon={Globe} label="Website" shape={L.tiles} />
+                <ActionTile
+                  href={card.website}
+                  icon={Globe}
+                  label="Website"
+                  shape={L.tiles}
+                  onTrack={() => track("website")}
+                />
               )}
               <ActionTile
                 icon={QrCode}
@@ -489,12 +510,32 @@ function PublicCardPage() {
               <ActionTile icon={Share2} label="Share" onClick={share} shape={L.tiles} />
             </div>
 
-            <Button variant="gold" className="mt-5 w-full" onClick={saveContact}>
-              <Download className="mr-2 h-4 w-4" /> Save contact (.vcf)
-            </Button>
+            <div className="mt-5 grid gap-2">
+              <Button variant="gold" className="w-full" onClick={saveContact}>
+                <Download className="mr-2 h-4 w-4" /> Save contact
+              </Button>
+              <Button
+                variant="goldOutline"
+                className="w-full"
+                onClick={() => setConnectOpen(true)}
+              >
+                <Handshake className="mr-2 h-4 w-4" /> Connect — share my details
+              </Button>
+            </div>
             <p className="mt-1.5 text-center text-[11px] text-muted-foreground">
-              Downloads a vCard — opens straight into your phone contacts.
+              Save contact downloads a vCard straight into your phone contacts.
             </p>
+
+            {(card.headline?.trim() || card.short_bio?.trim()) && (
+              <div className="mt-6 space-y-1.5 text-center">
+                {card.headline?.trim() && (
+                  <p className="font-display text-sm font-semibold text-primary">{card.headline}</p>
+                )}
+                {card.short_bio?.trim() && (
+                  <p className="text-xs leading-relaxed text-muted-foreground">{card.short_bio}</p>
+                )}
+              </div>
+            )}
 
             {highlights.length > 0 && (
               <section className="mt-8">
@@ -531,6 +572,7 @@ function PublicCardPage() {
                       href={l.url}
                       target="_blank"
                       rel="noreferrer"
+                      onClick={() => track("social", l.title || l.url)}
                       className="flex items-center justify-between gap-3 rounded-xl border border-border bg-primary/[0.03] px-4 py-3 text-sm transition-colors hover:border-primary/50"
                     >
                       <span className="truncate">{l.title || l.url}</span>
@@ -596,7 +638,15 @@ function PublicCardPage() {
                               if (!href) return null;
                               return (
                                 <Button size="sm" variant="gold" asChild>
-                                  <a href={href} target="_blank" rel="noreferrer">
+                                  <a
+                                    href={href}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    onClick={() => {
+                                      track("product_click", p.name);
+                                      if (card.upi_id) track("payment", p.name);
+                                    }}
+                                  >
                                     Buy now
                                   </a>
                                 </Button>
@@ -610,7 +660,12 @@ function PublicCardPage() {
                               if (!href) return null;
                               return (
                                 <Button size="sm" variant="goldOutline" asChild>
-                                  <a href={href} target="_blank" rel="noreferrer">
+                                  <a
+                                    href={href}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    onClick={() => track("product_click", p.name)}
+                                  >
                                     Enquire
                                   </a>
                                 </Button>
@@ -672,6 +727,7 @@ function PublicCardPage() {
                     href={m.url}
                     target="_blank"
                     rel="noreferrer"
+                    onClick={() => track("document", m.title || m.url)}
                     className="flex items-center gap-2 rounded-xl border border-border p-3 text-sm hover:border-primary/50"
                   >
                     <FileText className="h-4 w-4 text-primary" />
@@ -688,7 +744,10 @@ function PublicCardPage() {
                   <>
                     <p className="mt-2 text-sm">UPI: {card.upi_id}</p>
                     <Button variant="gold" size="sm" className="mt-3" asChild>
-                      <a href={upiPayUrl(card.upi_id, card.display_name, null, "Payment")}>
+                      <a
+                        href={upiPayUrl(card.upi_id, card.display_name, null, "Payment")}
+                        onClick={() => track("payment")}
+                      >
                         Pay via UPI
                       </a>
                     </Button>
@@ -702,9 +761,9 @@ function PublicCardPage() {
               </section>
             )}
 
-            <BookingScheduler card={card} />
+            <BookingScheduler card={card} slug={slug} />
 
-            <LeadForm card={card} />
+            <ExchangeCta card={card} onOpen={() => setConnectOpen(true)} />
 
             <p className="mt-8 text-center text-[11px] text-muted-foreground">
               Powered by <span className="text-primary">Glinkit</span> · Endless Opportunities
@@ -718,7 +777,7 @@ function PublicCardPage() {
         <div className="mx-auto flex max-w-md gap-2">
           {card.phone && (
             <Button variant="goldOutline" className="flex-1" asChild>
-              <a href={`tel:${card.phone}`}>
+              <a href={`tel:${card.phone}`} onClick={() => track("call")}>
                 <Phone className="mr-1.5 h-4 w-4" /> Call
               </a>
             </Button>
@@ -729,6 +788,7 @@ function PublicCardPage() {
                 href={waLink(card.whatsapp, `Hi ${card.display_name}, I saw your Glinkit card.`)}
                 target="_blank"
                 rel="noreferrer"
+                onClick={() => track("whatsapp")}
               >
                 <MessageCircle className="mr-1.5 h-4 w-4" /> WhatsApp
               </a>
@@ -737,8 +797,19 @@ function PublicCardPage() {
           <Button variant="goldOutline" className="flex-1" onClick={saveContact}>
             <Download className="mr-1.5 h-4 w-4" /> Save
           </Button>
+          <Button variant="gold" className="flex-1" onClick={() => setConnectOpen(true)}>
+            <Handshake className="mr-1.5 h-4 w-4" /> Connect
+          </Button>
         </div>
       </div>
+
+      <ConnectDialog
+        card={card}
+        slug={slug}
+        open={connectOpen}
+        onOpenChange={setConnectOpen}
+        onSaveContact={saveContact}
+      />
 
       <Dialog open={qrOpen} onOpenChange={setQrOpen}>
         <DialogContent className="max-w-xs">
