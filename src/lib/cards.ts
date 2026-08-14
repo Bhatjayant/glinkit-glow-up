@@ -226,7 +226,7 @@ export function vcard(card: Card, links: { url: string; title?: string }[] = [])
       ? `URL;TYPE=WhatsApp:https://wa.me/${card.whatsapp.replace(/[^\d]/g, "")}`
       : "",
     card.email ? `EMAIL:${card.email}` : "",
-    card.website ? `URL;TYPE=Website:${card.website}` : "",
+    externalUrl(card.website) ? `URL;TYPE=Website:${externalUrl(card.website)}` : "",
     card.address ? `ADR:;;${card.address};;;;` : "",
     card.photo_url ? `PHOTO;VALUE=URI:${card.photo_url}` : "",
     card.tagline ? `NOTE:${card.tagline.replace(/\n/g, " ")}` : "",
