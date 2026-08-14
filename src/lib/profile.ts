@@ -1,5 +1,5 @@
 import type { Card, Media, Product } from "@/lib/cards";
-import { waLink } from "@/lib/cards";
+import { externalUrl, mapsUrl, waLink } from "@/lib/cards";
 
 export const PROFILE_TYPES = [
   {
@@ -86,8 +86,10 @@ export function resolveCta(card: Card): ResolvedCta {
 
   switch (option.channel) {
     case "custom":
-      if (card.primary_cta_url?.trim())
-        return { label, kind: "link", href: card.primary_cta_url.trim(), event: "cta_custom" };
+      {
+        const href = externalUrl(card.primary_cta_url);
+        if (href) return { label, kind: "link", href, event: "cta_custom" };
+      }
       break;
     case "whatsapp":
       if (whatsapp) return { label, kind: "link", href: whatsapp, event: "whatsapp" };
@@ -98,15 +100,10 @@ export function resolveCta(card: Card): ResolvedCta {
     case "products":
       return { label, kind: "products", event: "cta_products" };
     case "maps":
-      if (card.maps_url || card.address)
-        return {
-          label,
-          kind: "link",
-          href:
-            card.maps_url ??
-            `https://maps.google.com/?q=${encodeURIComponent(card.address ?? "")}`,
-          event: "cta_maps",
-        };
+      {
+        const href = mapsUrl(card);
+        if (href) return { label, kind: "link", href, event: "cta_maps" };
+      }
       break;
     case "contact":
       if (whatsapp) return { label, kind: "link", href: whatsapp, event: "whatsapp" };
