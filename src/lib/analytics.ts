@@ -4,9 +4,9 @@ export const EVENT_TYPES = [
   "view",
   "save_contact",
   "connect",
-  "whatsapp"
-  | "cta"
-  | "service_click",
+  "whatsapp",
+  "cta",
+  "service_click",
   "call",
   "email",
   "website",
