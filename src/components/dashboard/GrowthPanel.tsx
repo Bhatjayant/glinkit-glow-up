@@ -14,12 +14,15 @@ export function GrowthPanel({
   leads: number;
   recommendation: string;
 }) {
-  const rate = views ? Math.round((connects / views) * 1000) / 10 : 0;
   const lines = [
-    `Your profile was viewed ${views} times in the last 30 days.`,
+    views
+      ? `Your profile was viewed ${views} ${views === 1 ? "time" : "times"} in the last 30 days.`
+      : "No views yet in the last 30 days — sharing your link is the first step.",
     `${saves} ${saves === 1 ? "person" : "people"} saved your contact.`,
-    `${connects} ${connects === 1 ? "person" : "people"} connected with you${leads ? `, ${leads} in your CRM` : ""}.`,
-    `Your connection rate is ${rate}%.`,
+    `${connects} ${connects === 1 ? "person" : "people"} connected with you${leads ? `, and ${leads} ${leads === 1 ? "lead is" : "leads are"} in your CRM` : ""}.`,
+    views >= 20
+      ? `That is a ${Math.round((connects / views) * 1000) / 10}% connection rate.`
+      : "Connection rate shows up once you pass 20 views.",
   ];
 
   return (
