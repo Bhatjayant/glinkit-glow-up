@@ -84,6 +84,24 @@ function DashboardPage() {
 
   const cardIds = cards.map((c) => c.id);
 
+  const primaryId = cards[0]?.id ?? "";
+  const { data: content } = useQuery({
+    queryKey: ["dash-content", primaryId],
+    enabled: Boolean(primaryId),
+    queryFn: async () => {
+      const [services, products, media] = await Promise.all([
+        supabase.from("card_services").select("id").eq("card_id", primaryId),
+        supabase.from("card_products").select("id").eq("card_id", primaryId),
+        supabase.from("card_media").select("id, kind").eq("card_id", primaryId),
+      ]);
+      return {
+        services: (services.data ?? []) as { id: string }[],
+        products: (products.data ?? []) as never[],
+        media: (media.data ?? []) as never[],
+      };
+    },
+  });
+
   const { data: stats } = useQuery({
     queryKey: ["dash-stats", cardIds.join(",")],
     enabled: cardIds.length > 0,
@@ -254,7 +272,13 @@ function DashboardPage() {
                           : "Momentum is good. Add a booking slot so interested visitors can meet you without messaging first."
                   }
                 />
-                <CompletionCard card={primary} compact />
+                <CompletionCard
+                  card={primary}
+                  compact
+                  services={content?.services}
+                  products={content?.products}
+                  media={content?.media}
+                />
               </div>
             )}
 
