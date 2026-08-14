@@ -676,9 +676,7 @@ function PublicCardPage() {
                   className="h-full w-full object-cover"
                 />
               ) : (
-                <div className="grid h-full w-full place-items-center bg-primary/15 font-display text-6xl font-bold text-primary">
-                  {card.display_name.slice(0, 1) || "G"}
-                </div>
+                photoFallback("h-20 w-20")
               )}
               <div className="absolute inset-0 bg-gradient-to-t from-background via-background/55 to-transparent" />
               {logo}
@@ -686,7 +684,7 @@ function PublicCardPage() {
               <div className="absolute inset-x-5 bottom-4">
                 <h1 className={`${nameClass(L.nameType)} flex items-center gap-1.5 drop-shadow`}>
                   <span className="truncate">{card.display_name}</span>
-                  <BadgeCheck className="h-4.5 w-4.5 shrink-0 text-primary" />
+                  {verified && <BadgeCheck className="h-4.5 w-4.5 shrink-0 text-primary" />}
                 </h1>
                 <p className="mt-0.5 text-[13px] text-primary">
                   {[card.job_title, card.company].filter((v) => v?.trim()).join(" • ")}
@@ -725,15 +723,13 @@ function PublicCardPage() {
                       className="h-full w-full object-cover"
                     />
                   ) : (
-                    <div className="grid h-full w-full place-items-center font-display text-2xl font-bold text-primary">
-                      {card.display_name.slice(0, 1) || "G"}
-                    </div>
+                    photoFallback("h-8 w-8")
                   )}
                 </div>
                 <div className="min-w-0">
                   <h1 className={`${nameClass(L.nameType)} flex items-center gap-1.5`}>
                     <span className="truncate">{card.display_name}</span>
-                    <BadgeCheck className="h-4 w-4 shrink-0 text-primary" />
+                    {verified && <BadgeCheck className="h-4 w-4 shrink-0 text-primary" />}
                   </h1>
                   {card.job_title && (
                     <p className="text-[12px] tracking-wide text-primary uppercase">
