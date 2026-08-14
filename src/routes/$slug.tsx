@@ -721,6 +721,8 @@ function PublicCardPage() {
               </section>
             )}
 
+            <BookingScheduler card={card} />
+
             <LeadForm card={card} />
 
             <p className="mt-8 text-center text-[11px] text-muted-foreground">
