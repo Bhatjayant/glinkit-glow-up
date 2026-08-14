@@ -316,13 +316,10 @@ function PublicCardPage() {
     });
 
   const utility: { href?: string; icon: typeof Phone; label: string; onClick?: () => void }[] = [];
-  if (card.maps_url || card.address)
-    utility.push({
-      href: card.maps_url ?? `https://maps.google.com/?q=${encodeURIComponent(card.address ?? "")}`,
-      icon: MapPin,
-      label: "Directions",
-    });
-  if (card.website) utility.push({ href: card.website, icon: Globe, label: "Website" });
+  const directions = mapsUrl(card);
+  const website = externalUrl(card.website);
+  if (directions) utility.push({ href: directions, icon: MapPin, label: "Directions" });
+  if (website) utility.push({ href: website, icon: Globe, label: "Website" });
   utility.push({ icon: QrCode, label: "QR", onClick: () => setQrOpen(true) });
   utility.push({ icon: Share2, label: "Share", onClick: share });
 
@@ -356,7 +353,11 @@ function PublicCardPage() {
                   )}
                   {(s.cta_label || s.cta_url) && (
                     <a
-                      href={s.cta_url || contactLink(`Hi ${firstName}, I'd like to know about ${s.title}.`) || "#"}
+                      href={
+                        externalUrl(s.cta_url) ||
+                        contactLink(`Hi ${firstName}, I'd like to know about ${s.title}.`) ||
+                        undefined
+                      }
                       target="_blank"
                       rel="noreferrer"
                       onClick={() => track("service_click", s.title)}
