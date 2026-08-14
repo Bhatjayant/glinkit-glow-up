@@ -194,6 +194,7 @@ function PublicCardPage() {
   if (!data) throw notFound();
 
   const { card, products, media } = data;
+  const track = (type: EventType, label = "") => void trackEvent(card.id, slug, type, label);
   const images = media.filter((m) => m.kind === "image");
   const videos = media.filter((m) => m.kind === "youtube");
   const pdfs = media.filter((m) => m.kind === "pdf");
