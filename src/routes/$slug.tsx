@@ -661,8 +661,8 @@ function PublicCardPage() {
         {/* The DVC itself: one self-contained card. Actions live inside this boundary. */}
         <div className="rounded-[28px] border border-primary/20 bg-background/35 p-2 shadow-[0_40px_90px_-45px_var(--primary)] backdrop-blur-sm sm:p-3">
           <div className="flex items-start gap-2 sm:gap-3">
-            {/* Desktop action rail — part of the card, sticky within its own boundary. */}
-            <nav aria-label="Ways to connect" className="hidden shrink-0 sm:block">
+            {/* Desktop action rail — part of the card, sticky within the full DVC height so it follows the scroll. */}
+            <nav aria-label="Ways to connect" className="hidden self-stretch sm:block">
               <ul className="sticky top-4 flex flex-col gap-1.5 rounded-full border border-primary/25 bg-background/70 p-1.5">
                 {rail.map((r) => (
                   <li key={r.label}>{railItem(r, "h-11 w-11")}</li>
