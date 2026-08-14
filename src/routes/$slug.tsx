@@ -46,7 +46,6 @@ import {
   sectionGap,
   type SectionKey,
 } from "@/lib/card-layouts";
-import { resolveCta } from "@/lib/profile";
 import {
   discountPct,
   externalUrl,
@@ -120,7 +119,6 @@ function PublicCardPage() {
   }, []);
   const [lightbox, setLightbox] = useState<string | null>(null);
   const bookingRef = useRef<HTMLDivElement | null>(null);
-  const offerRef = useRef<HTMLDivElement | null>(null);
   const { data, isLoading } = useQuery({
     queryKey: ["public-card", slug],
     queryFn: () => fetchPublicCard(slug),
@@ -227,27 +225,6 @@ function PublicCardPage() {
     toast.success("Link copied");
   };
 
-  const cta = resolveCta(card);
-  const runCta = () => {
-    track("cta", cta.event);
-    if (cta.kind === "connect") return setConnectOpen(true);
-    if (cta.kind === "booking")
-      return bookingRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-    if (cta.kind === "products")
-      return offerRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-  };
-  const ctaButton =
-    cta.kind === "link" ? (
-      <Button variant="gold" className="h-12 w-full text-[15px]" asChild>
-        <a href={cta.href} target="_blank" rel="noreferrer" onClick={() => track("cta", cta.event)}>
-          {cta.label} <ArrowRight className="ml-2 h-4 w-4" />
-        </a>
-      </Button>
-    ) : (
-      <Button variant="gold" className="h-12 w-full text-[15px]" onClick={runCta}>
-        {cta.label} <ArrowRight className="ml-2 h-4 w-4" />
-      </Button>
-    );
 
   const identityBlock = (
     <>
@@ -308,12 +285,29 @@ function PublicCardPage() {
   rail.push({ label: "QR code", icon: QrCode, onClick: () => setQrOpen(true) });
   rail.push({ label: "Share", icon: Share2, onClick: share });
 
-  const railItem = (r: RailAction, size: string) => {
-    const cls = `grid ${size} place-items-center rounded-full border transition-all hover:-translate-y-0.5 ${
-      r.primary
-        ? "border-primary bg-primary text-primary-foreground"
-        : "border-primary/25 bg-primary/[0.08] text-primary hover:border-primary/60 hover:bg-primary/20"
-    }`;
+  const railItem = (r: RailAction, variant: "desktop" | "mobile") => {
+    const isDesktop = variant === "desktop";
+    const cls = isDesktop
+      ? `flex flex-col items-center justify-center gap-1 rounded-2xl border px-2 py-2.5 transition-all hover:-translate-y-0.5 ${
+          r.primary
+            ? "border-primary bg-primary text-primary-foreground"
+            : "border-primary/25 bg-primary/[0.08] text-primary hover:border-primary/60 hover:bg-primary/20"
+        }`
+      : `grid h-10 w-10 place-items-center rounded-full border transition-all hover:-translate-y-0.5 ${
+          r.primary
+            ? "border-primary bg-primary text-primary-foreground"
+            : "border-primary/25 bg-primary/[0.08] text-primary hover:border-primary/60 hover:bg-primary/20"
+        }`;
+    const content = (
+      <>
+        <r.icon className={isDesktop ? "h-5 w-5" : "h-4.5 w-4.5"} />
+        {isDesktop && (
+          <span className="max-w-[64px] text-center text-[9px] font-medium leading-tight">
+            {r.label}
+          </span>
+        )}
+      </>
+    );
     return r.href ? (
       <a
         href={r.href}
@@ -324,7 +318,7 @@ function PublicCardPage() {
         onClick={r.onClick}
         className={cls}
       >
-        <r.icon className="h-4.5 w-4.5" />
+        {content}
       </a>
     ) : (
       <button
@@ -334,7 +328,7 @@ function PublicCardPage() {
         onClick={r.onClick}
         className={cls}
       >
-        <r.icon className="h-4.5 w-4.5" />
+        {content}
       </button>
     );
   };
@@ -454,7 +448,7 @@ function PublicCardPage() {
 
   if (showProducts)
     sections.products = (
-      <section key="products" ref={offerRef} className={gap}>
+      <section key="products" className={gap}>
         <SectionHeading>What I offer</SectionHeading>
         <ul className="mt-3 space-y-3">
           {products.map((p) => {
@@ -663,9 +657,9 @@ function PublicCardPage() {
           <div className="flex items-start gap-2 sm:gap-3">
             {/* Desktop action rail — part of the card, sticky within the full DVC height so it follows the scroll. */}
             <nav aria-label="Ways to connect" className="hidden self-stretch sm:block">
-              <ul className="sticky top-4 flex flex-col gap-1.5 rounded-full border border-primary/25 bg-background/70 p-1.5">
+              <ul className="sticky top-4 flex flex-col gap-2 rounded-2xl border border-primary/25 bg-background/70 p-2">
                 {rail.map((r) => (
-                  <li key={r.label}>{railItem(r, "h-11 w-11")}</li>
+                  <li key={r.label}>{railItem(r, "desktop")}</li>
                 ))}
               </ul>
             </nav>
@@ -820,39 +814,11 @@ function PublicCardPage() {
 
             {identityBlock}
 
-            {/* Primary actions — never more than three on the first screen. */}
-            <div
-              className={`mt-5 grid gap-2 ${L.ctaStyle === "banner" ? "rounded-2xl border border-primary/25 bg-primary/[0.06] p-3" : ""}`}
-            >
-              {L.ctaStyle !== "quiet" && ctaButton}
-              <div className="grid grid-cols-2 gap-2">
-                <Button variant="goldOutline" className="h-11" onClick={saveContact}>
-                  <Download className="mr-1.5 h-4 w-4" /> Save contact
-                </Button>
-                <Button
-                  variant={L.ctaStyle === "quiet" ? "gold" : "goldOutline"}
-                  className="h-11"
-                  onClick={() => setConnectOpen(true)}
-                >
-                  <Handshake className="mr-1.5 h-4 w-4" /> Connect
-                </Button>
-              </div>
-              {L.ctaStyle === "quiet" && cta.kind !== "connect" && (
-                <button
-                  type="button"
-                  onClick={runCta}
-                  className="mt-0.5 inline-flex items-center justify-center gap-1.5 text-xs font-medium text-primary hover:underline"
-                >
-                  {cta.label} <ArrowRight className="h-3.5 w-3.5" />
-                </button>
-              )}
-            </div>
-
             {/* Mobile: in-card compact action row (no external rail). */}
             <nav aria-label="Ways to connect" className="mt-4 sm:hidden">
               <ul className="-mx-1 flex flex-wrap gap-2 px-1">
                 {rail.map((r) => (
-                  <li key={r.label}>{railItem(r, "h-10 w-10")}</li>
+                  <li key={r.label}>{railItem(r, "mobile")}</li>
                 ))}
               </ul>
             </nav>
