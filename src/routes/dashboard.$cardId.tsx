@@ -12,6 +12,9 @@ import { TemplateGallery } from "@/components/dashboard/TemplateGallery";
 import { BackgroundPicker } from "@/components/dashboard/BackgroundPicker";
 import { LayoutPicker } from "@/components/dashboard/LayoutPicker";
 import { AiImprove } from "@/components/dashboard/AiImprove";
+import { AiProfileWizard } from "@/components/dashboard/AiProfileWizard";
+import { LeadsCrm } from "@/components/dashboard/LeadsCrm";
+import { AnalyticsPanel } from "@/components/dashboard/AnalyticsPanel";
 import { BookingManager } from "@/components/dashboard/BookingManager";
 import type { CardTemplate } from "@/lib/card-templates";
 
@@ -43,6 +46,9 @@ const cardSchema = z.object({
   company: z.string().trim().max(100),
   tagline: z.string().trim().max(160),
   about: z.string().trim().max(2000),
+  headline: z.string().trim().max(120),
+  short_bio: z.string().trim().max(200),
+  seo_description: z.string().trim().max(160),
   photo_url: z.string().trim().max(500),
   logo_url: z.string().trim().max(500),
   phone: z.string().trim().max(20),
@@ -158,27 +164,6 @@ function EditCardPage() {
     },
   });
 
-  const { data: leads = [] } = useQuery({
-    queryKey: ["card-leads", cardId],
-    enabled: Boolean(user),
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("card_leads")
-        .select("*")
-        .eq("card_id", cardId)
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return data as {
-        id: string;
-        name: string;
-        phone: string;
-        email: string;
-        message: string;
-        created_at: string;
-      }[];
-    },
-  });
-
   const save = useMutation({
     mutationFn: async (publish?: boolean) => {
       if (!form) return;
@@ -189,6 +174,9 @@ function EditCardPage() {
         company: form.company ?? "",
         tagline: form.tagline ?? "",
         about: form.about ?? "",
+        headline: form.headline ?? "",
+        short_bio: form.short_bio ?? "",
+        seo_description: form.seo_description ?? "",
         photo_url: form.photo_url ?? "",
         logo_url: form.logo_url ?? "",
         phone: form.phone ?? "",
@@ -233,6 +221,9 @@ function EditCardPage() {
         company: current.company ?? "",
         tagline: current.tagline ?? "",
         about: current.about ?? "",
+        headline: current.headline ?? "",
+        short_bio: current.short_bio ?? "",
+        seo_description: current.seo_description ?? "",
         photo_url: current.photo_url ?? "",
         logo_url: current.logo_url ?? "",
         phone: current.phone ?? "",
