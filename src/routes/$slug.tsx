@@ -820,43 +820,9 @@ function PublicCardPage() {
               )}
             </div>
 
-            {secondary.length > 0 && (
-              <div className="mt-4 flex flex-wrap gap-2">
-                {secondary.map((s) => (
-                  <a
-                    key={s.label}
-                    href={s.href}
-                    target="_blank"
-                    rel="noreferrer"
-                    onClick={s.onTrack}
-                    className="flex flex-1 basis-24 items-center justify-center gap-1.5 rounded-full border border-border bg-primary/[0.04] px-3 py-2.5 text-xs font-medium transition-colors hover:border-primary/50"
-                  >
-                    <s.icon className="h-3.5 w-3.5 text-primary" /> {s.label}
-                  </a>
-                ))}
-              </div>
-            )}
-
-            <div
-              className={
-                L.tiles === "list"
-                  ? "mt-5 grid grid-cols-1"
-                  : L.tiles === "pill"
-                    ? `mt-5 flex flex-wrap gap-2 ${L.align === "center" ? "justify-center" : ""}`
-                    : "mt-5 grid grid-cols-4 gap-2"
-              }
-            >
-              {utility.map((u) => (
-                <ActionTile
-                  key={u.label}
-                  href={u.href}
-                  onClick={u.onClick}
-                  icon={u.icon}
-                  label={u.label}
-                  shape={L.tiles}
-                />
-              ))}
-            </div>
+            <p className="mt-4 text-[11px] text-muted-foreground">
+              Use the side bar to WhatsApp, call, email or share this profile.
+            </p>
 
             {L.order.map((key) => sections[key] ?? null)}
 
