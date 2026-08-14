@@ -423,10 +423,10 @@ function PublicCardPage() {
       <section key="links" className={gap}>
         <SectionHeading icon={Link2}>Links</SectionHeading>
         <div className="mt-3 grid gap-2">
-          {links.map((l) => (
+          {links.map((l) => externalUrl(l.url) && (
             <a
               key={l.id}
-              href={l.url}
+              href={externalUrl(l.url)!}
               target="_blank"
               rel="noreferrer"
               onClick={() => track("social", l.title || l.url)}
@@ -773,9 +773,7 @@ function PublicCardPage() {
                       className="h-full w-full object-cover"
                     />
                   ) : (
-                    <div className="grid h-full w-full place-items-center font-display text-3xl font-bold text-primary">
-                      {card.display_name.slice(0, 1) || "G"}
-                    </div>
+                    photoFallback("h-10 w-10")
                   )}
                 </div>
 
@@ -783,7 +781,7 @@ function PublicCardPage() {
                   className={`${nameClass(L.nameType)} flex items-center gap-1.5 ${L.align === "center" ? "justify-center" : ""}`}
                 >
                   <span className="truncate">{card.display_name}</span>
-                  <BadgeCheck className="h-4.5 w-4.5 shrink-0 text-primary" />
+                  {verified && <BadgeCheck className="h-4.5 w-4.5 shrink-0 text-primary" />}
                 </h1>
                 <p
                   className={`mt-1 text-[13px] text-primary ${L.align === "center" ? "" : ""}`}
