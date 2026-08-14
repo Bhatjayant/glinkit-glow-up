@@ -833,30 +833,48 @@ function PublicCardPage() {
         </div>
       </div>
 
-      {/* sticky quick bar */}
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-primary/20 bg-background/85 px-3 py-2.5 backdrop-blur-md">
-        <div className="mx-auto flex max-w-md gap-2 sm:max-w-lg">
-          {card.whatsapp && (
-            <Button variant="goldOutline" className="h-11 flex-1 px-2" asChild>
-              <a
-                href={waLink(card.whatsapp, `Hi ${firstName}, I saw your Glinkit profile.`)}
-                target="_blank"
-                rel="noreferrer"
-                onClick={() => track("whatsapp")}
-              >
-                <MessageCircle className="h-4 w-4 sm:mr-1.5" />
-                <span className="hidden sm:inline">WhatsApp</span>
-              </a>
-            </Button>
-          )}
-          <Button variant="goldOutline" className="h-11 flex-1 px-2" onClick={saveContact}>
-            <Download className="mr-1.5 h-4 w-4" /> Save
-          </Button>
-          <Button variant="gold" className="h-11 flex-[1.4] px-2" onClick={() => setConnectOpen(true)}>
-            <Handshake className="mr-1.5 h-4 w-4" /> Connect
-          </Button>
-        </div>
-      </div>
+      {/* One floating rail on the left — every way to connect, on every scroll position. */}
+      <nav
+        aria-label="Ways to connect"
+        className="fixed top-1/2 left-1.5 z-40 -translate-y-1/2 sm:left-3"
+      >
+        <ul className="flex flex-col gap-1.5 rounded-full border border-primary/25 bg-background/85 p-1.5 shadow-[0_18px_44px_-24px_var(--primary)] backdrop-blur-md">
+          {rail.map((r) => {
+            const cls = `grid h-10 w-10 place-items-center rounded-full border transition-all hover:-translate-y-0.5 sm:h-11 sm:w-11 ${
+              r.primary
+                ? "border-primary bg-primary text-primary-foreground"
+                : "border-primary/25 bg-primary/[0.08] text-primary hover:border-primary/60 hover:bg-primary/20"
+            }`;
+            return (
+              <li key={r.label}>
+                {r.href ? (
+                  <a
+                    href={r.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    title={r.label}
+                    aria-label={r.label}
+                    onClick={r.onClick}
+                    className={cls}
+                  >
+                    <r.icon className="h-4.5 w-4.5" />
+                  </a>
+                ) : (
+                  <button
+                    type="button"
+                    title={r.label}
+                    aria-label={r.label}
+                    onClick={r.onClick}
+                    className={cls}
+                  >
+                    <r.icon className="h-4.5 w-4.5" />
+                  </button>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
 
       <ConnectDialog
         card={card}
