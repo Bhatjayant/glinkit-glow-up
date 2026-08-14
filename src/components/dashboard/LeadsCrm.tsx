@@ -60,7 +60,9 @@ export function LeadsCrm({ cardId }: { cardId: string }) {
 
   const filtered = useMemo(() => {
     const needle = q.trim().toLowerCase();
-    return leads.filter((l) => {
+    const rank: Record<string, number> = { new: 0, contacted: 1, qualified: 2, won: 3, lost: 4 };
+    return leads
+      .filter((l) => {
       if (Boolean(l.archived) !== showArchived) return false;
       if (status !== "all" && l.status !== status) return false;
       if (!needle) return true;
@@ -68,7 +70,13 @@ export function LeadsCrm({ cardId }: { cardId: string }) {
         .join(" ")
         .toLowerCase()
         .includes(needle);
-    });
+      })
+      // Most actionable first: new before contacted, then newest.
+      .sort(
+        (a, b) =>
+          (rank[a.status] ?? 0) - (rank[b.status] ?? 0) ||
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+      );
   }, [leads, q, status, showArchived]);
 
   const counts = useMemo(() => {
@@ -87,6 +95,10 @@ export function LeadsCrm({ cardId }: { cardId: string }) {
         <h2 className="font-display flex items-center gap-2 text-lg font-semibold">
           <Users className="h-4.5 w-4.5 text-primary" /> Leads
         </h2>
+        <p className="w-full order-last text-xs text-muted-foreground">
+          Newest and unanswered connections first — open one to WhatsApp, call, set a follow-up date
+          or add a note.
+        </p>
         <Button
           size="sm"
           variant={showArchived ? "gold" : "ghost"}
@@ -266,7 +278,11 @@ export function LeadsCrm({ cardId }: { cardId: string }) {
         })}
         {filtered.length === 0 && (
           <li className="rounded-2xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-            {showArchived ? "Nothing archived yet." : "No leads match this view yet."}
+            {showArchived
+              ? "Nothing archived yet. Archived leads stay here, out of your daily view."
+              : leads.length === 0
+                ? "No connections yet. Share your Glinkit link or QR — every visitor who exchanges details lands here, ready to follow up."
+                : "No leads match this filter. Try “All” or clear the search."}
           </li>
         )}
       </ul>
