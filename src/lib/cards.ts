@@ -128,6 +128,32 @@ export const upiPayUrl = (upiId: string, name: string, amount: number | null, no
 export const waLink = (number: string, text: string) =>
   `https://wa.me/${number.replace(/[^\d]/g, "")}?text=${encodeURIComponent(text)}`;
 
+/** Turn user input like "www.site.com" into an absolute external URL. Never relative. */
+export const externalUrl = (raw: string | null | undefined) => {
+  const v = (raw ?? "").trim();
+  if (!v) return null;
+  if (/^(https?:)?\/\//i.test(v)) return v.startsWith("//") ? `https:${v}` : v;
+  if (/^(mailto:|tel:|upi:)/i.test(v)) return v;
+  if (!/^[\w-]+(\.[\w-]+)+/.test(v)) return null;
+  return `https://${v.replace(/^\/+/, "")}`;
+};
+
+const PLACEHOLDER_TITLES = ["new item", "new product", "new service", "untitled", "item", "-"];
+
+/** A public card entry is only shown when it has a real title. */
+export const hasRealTitle = (title: string | null | undefined) => {
+  const t = (title ?? "").trim().toLowerCase();
+  return t.length > 1 && !PLACEHOLDER_TITLES.includes(t);
+};
+
+/** Directions destination, or null when no location is configured. */
+export const mapsUrl = (card: Pick<Card, "maps_url" | "address">) => {
+  const direct = externalUrl(card.maps_url);
+  if (direct) return direct;
+  const addr = (card.address ?? "").trim();
+  return addr ? `https://maps.google.com/?q=${encodeURIComponent(addr)}` : null;
+};
+
 export async function fetchPublicCard(slug: string) {
   const { data: card, error } = await supabase
     .from("cards")
@@ -156,9 +182,9 @@ export async function fetchPublicCard(slug: string) {
   ]);
   return {
     card: card as Card,
-    products: (products ?? []) as Product[],
-    media: (media ?? []) as Media[],
-    services: (services ?? []) as Service[],
+    products: ((products ?? []) as Product[]).filter((p) => hasRealTitle(p.name)),
+    media: ((media ?? []) as Media[]).filter((m) => Boolean(m.url?.trim() || m.title?.trim())),
+    services: ((services ?? []) as Service[]).filter((s) => hasRealTitle(s.title)),
   };
 }
 
@@ -200,7 +226,7 @@ export function vcard(card: Card, links: { url: string; title?: string }[] = [])
       ? `URL;TYPE=WhatsApp:https://wa.me/${card.whatsapp.replace(/[^\d]/g, "")}`
       : "",
     card.email ? `EMAIL:${card.email}` : "",
-    card.website ? `URL;TYPE=Website:${card.website}` : "",
+    externalUrl(card.website) ? `URL;TYPE=Website:${externalUrl(card.website)}` : "",
     card.address ? `ADR:;;${card.address};;;;` : "",
     card.photo_url ? `PHOTO;VALUE=URI:${card.photo_url}` : "",
     card.tagline ? `NOTE:${card.tagline.replace(/\n/g, " ")}` : "",

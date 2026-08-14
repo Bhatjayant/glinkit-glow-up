@@ -21,6 +21,7 @@ import {
   QrCode,
   Share2,
   Sparkles,
+  UserRound,
   X,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -48,8 +49,10 @@ import {
 import { resolveCta } from "@/lib/profile";
 import {
   discountPct,
+  externalUrl,
   fetchPublicCard,
   inr,
+  mapsUrl,
   upiPayUrl,
   vcard,
   waLink,
@@ -61,13 +64,15 @@ export const Route = createFileRoute("/$slug")({
   head: ({ params, loaderData }) => {
     const card = loaderData?.card;
     const name = card?.display_name?.trim() || params.slug;
-    const role = [card?.job_title, card?.company].filter((v) => v?.trim()).join(" · ");
+    const role = [card?.job_title?.trim(), card?.company?.trim()].filter(Boolean).join(" · ");
     const t = role ? `${name} | ${role}` : `${name} | Glinkit profile`;
     const desc =
       card?.seo_description?.trim() ||
       card?.headline?.trim() ||
+      card?.short_bio?.trim() ||
       card?.tagline?.trim() ||
-      `Connect with ${name} — save the contact, message on WhatsApp or share your details back.`;
+      card?.about?.trim() ||
+      [name, role].filter(Boolean).join(" — ");
     const url = `${SITE_URL}/${params.slug}`;
     const image = card?.photo_url?.startsWith("https://") ? card.photo_url : null;
     return {
@@ -199,6 +204,13 @@ function PublicCardPage() {
   const showProducts = offerMode !== "services" && products.length > 0;
   const showServices = offerMode !== "products" && services.length > 0;
   const firstName = card.display_name.split(" ")[0] || card.display_name;
+  // "Verification" is shown only for profiles with a real photo and organisation.
+  const verified = Boolean(card.photo_url && card.company?.trim());
+  const photoFallback = (size: string) => (
+    <div className="grid h-full w-full place-items-center bg-primary/10">
+      <UserRound className={`${size} text-primary/55`} strokeWidth={1.25} />
+    </div>
+  );
 
   const logo = card.logo_url ? (
     <img
@@ -312,13 +324,10 @@ function PublicCardPage() {
     });
 
   const utility: { href?: string; icon: typeof Phone; label: string; onClick?: () => void }[] = [];
-  if (card.maps_url || card.address)
-    utility.push({
-      href: card.maps_url ?? `https://maps.google.com/?q=${encodeURIComponent(card.address ?? "")}`,
-      icon: MapPin,
-      label: "Directions",
-    });
-  if (card.website) utility.push({ href: card.website, icon: Globe, label: "Website" });
+  const directions = mapsUrl(card);
+  const website = externalUrl(card.website);
+  if (directions) utility.push({ href: directions, icon: MapPin, label: "Directions" });
+  if (website) utility.push({ href: website, icon: Globe, label: "Website" });
   utility.push({ icon: QrCode, label: "QR", onClick: () => setQrOpen(true) });
   utility.push({ icon: Share2, label: "Share", onClick: share });
 
@@ -329,7 +338,11 @@ function PublicCardPage() {
       <section key="services" className={gap}>
         <SectionHeading icon={Sparkles}>What I do</SectionHeading>
         <ul className="mt-4 space-y-3">
-          {services.map((s) => (
+          {services.map((s) => {
+            const sHref =
+              externalUrl(s.cta_url) ||
+              contactLink(`Hi ${firstName}, I'd like to know about ${s.title}.`);
+            return (
             <li
               key={s.id}
               className="overflow-hidden rounded-2xl border border-border bg-primary/[0.035] p-4 transition-colors hover:border-primary/40"
@@ -350,9 +363,9 @@ function PublicCardPage() {
                       {s.description}
                     </p>
                   )}
-                  {(s.cta_label || s.cta_url) && (
+                  {sHref && (
                     <a
-                      href={s.cta_url || contactLink(`Hi ${firstName}, I'd like to know about ${s.title}.`) || "#"}
+                      href={sHref}
                       target="_blank"
                       rel="noreferrer"
                       onClick={() => track("service_click", s.title)}
@@ -364,7 +377,8 @@ function PublicCardPage() {
                 </div>
               </div>
             </li>
-          ))}
+            );
+          })}
         </ul>
       </section>
     );
@@ -410,10 +424,10 @@ function PublicCardPage() {
       <section key="links" className={gap}>
         <SectionHeading icon={Link2}>Links</SectionHeading>
         <div className="mt-3 grid gap-2">
-          {links.map((l) => (
+          {links.map((l) => externalUrl(l.url) && (
             <a
               key={l.id}
-              href={l.url}
+              href={externalUrl(l.url)!}
               target="_blank"
               rel="noreferrer"
               onClick={() => track("social", l.title || l.url)}
@@ -663,9 +677,7 @@ function PublicCardPage() {
                   className="h-full w-full object-cover"
                 />
               ) : (
-                <div className="grid h-full w-full place-items-center bg-primary/15 font-display text-6xl font-bold text-primary">
-                  {card.display_name.slice(0, 1) || "G"}
-                </div>
+                photoFallback("h-20 w-20")
               )}
               <div className="absolute inset-0 bg-gradient-to-t from-background via-background/55 to-transparent" />
               {logo}
@@ -673,7 +685,7 @@ function PublicCardPage() {
               <div className="absolute inset-x-5 bottom-4">
                 <h1 className={`${nameClass(L.nameType)} flex items-center gap-1.5 drop-shadow`}>
                   <span className="truncate">{card.display_name}</span>
-                  <BadgeCheck className="h-4.5 w-4.5 shrink-0 text-primary" />
+                  {verified && <BadgeCheck className="h-4.5 w-4.5 shrink-0 text-primary" />}
                 </h1>
                 <p className="mt-0.5 text-[13px] text-primary">
                   {[card.job_title, card.company].filter((v) => v?.trim()).join(" • ")}
@@ -712,15 +724,13 @@ function PublicCardPage() {
                       className="h-full w-full object-cover"
                     />
                   ) : (
-                    <div className="grid h-full w-full place-items-center font-display text-2xl font-bold text-primary">
-                      {card.display_name.slice(0, 1) || "G"}
-                    </div>
+                    photoFallback("h-8 w-8")
                   )}
                 </div>
                 <div className="min-w-0">
                   <h1 className={`${nameClass(L.nameType)} flex items-center gap-1.5`}>
                     <span className="truncate">{card.display_name}</span>
-                    <BadgeCheck className="h-4 w-4 shrink-0 text-primary" />
+                    {verified && <BadgeCheck className="h-4 w-4 shrink-0 text-primary" />}
                   </h1>
                   {card.job_title && (
                     <p className="text-[12px] tracking-wide text-primary uppercase">
@@ -764,9 +774,7 @@ function PublicCardPage() {
                       className="h-full w-full object-cover"
                     />
                   ) : (
-                    <div className="grid h-full w-full place-items-center font-display text-3xl font-bold text-primary">
-                      {card.display_name.slice(0, 1) || "G"}
-                    </div>
+                    photoFallback("h-10 w-10")
                   )}
                 </div>
 
@@ -774,7 +782,7 @@ function PublicCardPage() {
                   className={`${nameClass(L.nameType)} flex items-center gap-1.5 ${L.align === "center" ? "justify-center" : ""}`}
                 >
                   <span className="truncate">{card.display_name}</span>
-                  <BadgeCheck className="h-4.5 w-4.5 shrink-0 text-primary" />
+                  {verified && <BadgeCheck className="h-4.5 w-4.5 shrink-0 text-primary" />}
                 </h1>
                 <p
                   className={`mt-1 text-[13px] text-primary ${L.align === "center" ? "" : ""}`}
