@@ -410,6 +410,43 @@ function EditCardPage() {
           applyingId={appliedTemplate}
         />
 
+        <AiProfileWizard
+          onApply={(draft, accepted) => {
+            const patch: Partial<Card> = {};
+            for (const key of accepted.fields) {
+              if (key === "cta") {
+                if (!form.tagline?.trim()) patch.tagline = draft.cta.slice(0, 160);
+                continue;
+              }
+              if (key === "headline") patch.headline = draft.headline.slice(0, 120);
+              if (key === "short_bio") patch.short_bio = draft.short_bio.slice(0, 200);
+              if (key === "about") patch.about = draft.about.slice(0, 2000);
+              if (key === "tagline") patch.tagline = draft.tagline.slice(0, 160);
+              if (key === "seo_description")
+                patch.seo_description = draft.seo_description.slice(0, 160);
+            }
+            if (Object.keys(patch).length) set(patch);
+            if (accepted.services && draft.services.length) {
+              void (async () => {
+                const { error } = await supabase.from("card_products").insert(
+                  draft.services.map((s, i) => ({
+                    card_id: cardId,
+                    name: s.name.slice(0, 120),
+                    description: s.description.slice(0, 500),
+                    sort_order: products.length + i,
+                  })),
+                );
+                if (error) {
+                  toast.error("Could not add the services");
+                  return;
+                }
+                void qc.invalidateQueries({ queryKey: ["card-products", cardId] });
+              })();
+            }
+            toast.success("Applied — review and publish when ready");
+          }}
+        />
+
         <section className="surface-panel mt-6 space-y-4 rounded-2xl p-6">
           <h2 className="font-display text-lg font-semibold">Profile</h2>
           <div>
@@ -458,6 +495,19 @@ function EditCardPage() {
             onChange={(v) => set({ company: v })}
           />
           <Field
+            label="Professional headline"
+            value={form.headline ?? ""}
+            max={120}
+            placeholder="Commercial real estate consultant · Pune"
+            onChange={(v) => set({ headline: v })}
+          />
+          <Field
+            label="Short bio (one line)"
+            value={form.short_bio ?? ""}
+            max={200}
+            onChange={(v) => set({ short_bio: v })}
+          />
+          <Field
             label="Tagline"
             value={form.tagline ?? ""}
             max={160}
@@ -491,6 +541,12 @@ function EditCardPage() {
             value={form.photo_url ?? ""}
             max={500}
             onChange={(v) => set({ photo_url: v })}
+          />
+          <Field
+            label="SEO description (shown on Google & link previews)"
+            value={form.seo_description ?? ""}
+            max={160}
+            onChange={(v) => set({ seo_description: v })}
           />
           <Field
             label="Logo URL"
