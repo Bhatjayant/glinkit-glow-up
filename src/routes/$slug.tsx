@@ -21,6 +21,7 @@ import {
   QrCode,
   Share2,
   Sparkles,
+  UserRound,
   X,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -203,6 +204,13 @@ function PublicCardPage() {
   const showProducts = offerMode !== "services" && products.length > 0;
   const showServices = offerMode !== "products" && services.length > 0;
   const firstName = card.display_name.split(" ")[0] || card.display_name;
+  // "Verification" is shown only for profiles with a real photo and organisation.
+  const verified = Boolean(card.photo_url && card.company?.trim());
+  const photoFallback = (size: string) => (
+    <div className="grid h-full w-full place-items-center bg-primary/10">
+      <UserRound className={`${size} text-primary/55`} strokeWidth={1.25} />
+    </div>
+  );
 
   const logo = card.logo_url ? (
     <img
