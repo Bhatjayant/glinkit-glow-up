@@ -186,7 +186,9 @@ function PublicCardPage() {
   }, [data?.card?.id, slug]);
 
   if (isLoading) {
-    return <div className="px-5 py-24 text-center text-sm text-muted-foreground">Loading profile…</div>;
+    return (
+      <div className="px-5 py-24 text-center text-sm text-muted-foreground">Loading profile…</div>
+    );
   }
   if (!data) throw notFound();
 
@@ -240,9 +242,17 @@ function PublicCardPage() {
 
   const saveContact = () => {
     track("save_contact");
-    const blob = new Blob([vcard(card, links.map((l) => ({ url: l.url, title: l.title })))], {
-      type: "text/vcard",
-    });
+    const blob = new Blob(
+      [
+        vcard(
+          card,
+          links.map((l) => ({ url: l.url, title: l.title })),
+        ),
+      ],
+      {
+        type: "text/vcard",
+      },
+    );
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -291,7 +301,9 @@ function PublicCardPage() {
   const identityBlock = (
     <>
       {card.headline?.trim() && (
-        <p className={`mt-4 text-[15px] leading-snug font-medium text-foreground ${L.align === "center" ? "text-center" : ""}`}>
+        <p
+          className={`mt-4 text-[15px] leading-snug font-medium text-foreground ${L.align === "center" ? "text-center" : ""}`}
+        >
           {card.headline}
         </p>
       )}
@@ -326,9 +338,19 @@ function PublicCardPage() {
       onClick: () => track("whatsapp"),
     });
   if (card.phone)
-    rail.push({ label: "Call", icon: Phone, href: `tel:${card.phone}`, onClick: () => track("call") });
+    rail.push({
+      label: "Call",
+      icon: Phone,
+      href: `tel:${card.phone}`,
+      onClick: () => track("call"),
+    });
   if (card.email)
-    rail.push({ label: "Email", icon: Mail, href: `mailto:${card.email}`, onClick: () => track("email") });
+    rail.push({
+      label: "Email",
+      icon: Mail,
+      href: `mailto:${card.email}`,
+      onClick: () => track("email"),
+    });
   rail.push({ label: "Save contact", icon: Download, onClick: saveContact });
   if (directions) rail.push({ label: "Directions", icon: MapPin, href: directions });
   if (website) rail.push({ label: "Website", icon: Globe, href: website });
@@ -347,40 +369,40 @@ function PublicCardPage() {
               externalUrl(s.cta_url) ||
               contactLink(`Hi ${firstName}, I'd like to know about ${s.title}.`);
             return (
-            <li
-              key={s.id}
-              className="overflow-hidden rounded-2xl border border-border bg-primary/[0.035] p-4 transition-colors hover:border-primary/40"
-            >
-              <div className="flex items-start gap-3">
-                {s.image_url && (
-                  <img
-                    src={s.image_url}
-                    alt={s.title}
-                    loading="lazy"
-                    className="h-14 w-14 shrink-0 rounded-xl border border-border object-cover"
-                  />
-                )}
-                <div className="min-w-0">
-                  <p className="font-display text-[15px] font-semibold">{s.title}</p>
-                  {s.description && (
-                    <p className="mt-1 text-[13px] leading-relaxed text-muted-foreground">
-                      {s.description}
-                    </p>
+              <li
+                key={s.id}
+                className="overflow-hidden rounded-2xl border border-border bg-primary/[0.035] p-4 transition-colors hover:border-primary/40"
+              >
+                <div className="flex items-start gap-3">
+                  {s.image_url && (
+                    <img
+                      src={s.image_url}
+                      alt={s.title}
+                      loading="lazy"
+                      className="h-14 w-14 shrink-0 rounded-xl border border-border object-cover"
+                    />
                   )}
-                  {sHref && (
-                    <a
-                      href={sHref}
-                      target="_blank"
-                      rel="noreferrer"
-                      onClick={() => track("service_click", s.title)}
-                      className="mt-2.5 inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline"
-                    >
-                      {s.cta_label || "Know more"} <ArrowRight className="h-3.5 w-3.5" />
-                    </a>
-                  )}
+                  <div className="min-w-0">
+                    <p className="font-display text-[15px] font-semibold">{s.title}</p>
+                    {s.description && (
+                      <p className="mt-1 text-[13px] leading-relaxed text-muted-foreground">
+                        {s.description}
+                      </p>
+                    )}
+                    {sHref && (
+                      <a
+                        href={sHref}
+                        target="_blank"
+                        rel="noreferrer"
+                        onClick={() => track("service_click", s.title)}
+                        className="mt-2.5 inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline"
+                      >
+                        {s.cta_label || "Know more"} <ArrowRight className="h-3.5 w-3.5" />
+                      </a>
+                    )}
+                  </div>
                 </div>
-              </div>
-            </li>
+              </li>
             );
           })}
         </ul>
@@ -428,19 +450,22 @@ function PublicCardPage() {
       <section key="links" className={gap}>
         <SectionHeading icon={Link2}>Links</SectionHeading>
         <div className="mt-3 grid gap-2">
-          {links.map((l) => externalUrl(l.url) && (
-            <a
-              key={l.id}
-              href={externalUrl(l.url)!}
-              target="_blank"
-              rel="noreferrer"
-              onClick={() => track("social", l.title || l.url)}
-              className="flex items-center justify-between gap-3 rounded-xl border border-border bg-primary/[0.03] px-4 py-3 text-sm transition-colors hover:border-primary/50"
-            >
-              <span className="truncate">{l.title || l.url}</span>
-              <ExternalLink className="h-4 w-4 shrink-0 text-primary" />
-            </a>
-          ))}
+          {links.map(
+            (l) =>
+              externalUrl(l.url) && (
+                <a
+                  key={l.id}
+                  href={externalUrl(l.url)!}
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={() => track("social", l.title || l.url)}
+                  className="flex items-center justify-between gap-3 rounded-xl border border-border bg-primary/[0.03] px-4 py-3 text-sm transition-colors hover:border-primary/50"
+                >
+                  <span className="truncate">{l.title || l.url}</span>
+                  <ExternalLink className="h-4 w-4 shrink-0 text-primary" />
+                </a>
+              ),
+          )}
         </div>
       </section>
     );
@@ -603,7 +628,10 @@ function PublicCardPage() {
 
   if (card.upi_id || card.bank_details)
     sections.payments = (
-      <section key="payments" className={`${gap} rounded-2xl border border-primary/25 bg-primary/5 p-4`}>
+      <section
+        key="payments"
+        className={`${gap} rounded-2xl border border-primary/25 bg-primary/5 p-4`}
+      >
         <SectionHeading>Payments</SectionHeading>
         {card.upi_id && (
           <>
@@ -715,7 +743,9 @@ function PublicCardPage() {
             </div>
           )}
 
-          <div className={`${bodyPad(L.density)} ${L.hero === "banner" || L.hero === "cover" ? "" : "pt-6"}`}>
+          <div
+            className={`${bodyPad(L.density)} ${L.hero === "banner" || L.hero === "cover" ? "" : "pt-6"}`}
+          >
             {L.hero === "split" ? (
               <div className="flex items-start gap-4">
                 <div
@@ -788,9 +818,7 @@ function PublicCardPage() {
                   <span className="truncate">{card.display_name}</span>
                   {verified && <BadgeCheck className="h-4.5 w-4.5 shrink-0 text-primary" />}
                 </h1>
-                <p
-                  className={`mt-1 text-[13px] text-primary ${L.align === "center" ? "" : ""}`}
-                >
+                <p className={`mt-1 text-[13px] text-primary ${L.align === "center" ? "" : ""}`}>
                   {[card.job_title, card.company].filter((v) => v?.trim()).join(" • ")}
                 </p>
               </div>
@@ -799,7 +827,9 @@ function PublicCardPage() {
             {identityBlock}
 
             {/* Primary actions — never more than three on the first screen. */}
-            <div className={`mt-5 grid gap-2 ${L.ctaStyle === "banner" ? "rounded-2xl border border-primary/25 bg-primary/[0.06] p-3" : ""}`}>
+            <div
+              className={`mt-5 grid gap-2 ${L.ctaStyle === "banner" ? "rounded-2xl border border-primary/25 bg-primary/[0.06] p-3" : ""}`}
+            >
               {L.ctaStyle !== "quiet" && ctaButton}
               <div className="grid grid-cols-2 gap-2">
                 <Button variant="goldOutline" className="h-11" onClick={saveContact}>
