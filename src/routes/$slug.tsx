@@ -146,74 +146,28 @@ function SectionHeading({ icon: Icon, children }: { icon?: typeof Phone; childre
   );
 }
 
-function LeadForm({ card }: { card: Card }) {
-  const [form, setForm] = useState({ name: "", phone: "", email: "", message: "" });
-  const [busy, setBusy] = useState(false);
-
-  const submit = async () => {
-    const parsed = leadSchema.safeParse(form);
-    if (!parsed.success) {
-      toast.error(parsed.error.issues[0]?.message ?? "Check your details");
-      return;
-    }
-    setBusy(true);
-    const { error } = await supabase.from("card_leads").insert({
-      card_id: card.id,
-      ...parsed.data,
-    });
-    setBusy(false);
-    if (error) {
-      toast.error("Could not send. Please try WhatsApp.");
-      return;
-    }
-    setForm({ name: "", phone: "", email: "", message: "" });
-    toast.success("Enquiry sent.");
-  };
-
+function ExchangeCta({ card, onOpen }: { card: Card; onOpen: () => void }) {
   return (
-    <section className="mt-8">
-      <h2 className="font-display text-sm font-semibold tracking-wide uppercase">Send an enquiry</h2>
-      <div className="mt-3 space-y-3">
-        <input
-          className={inputCls}
-          placeholder="Your name"
-          maxLength={100}
-          value={form.name}
-          onChange={(e) => setForm({ ...form, name: e.target.value })}
-        />
-        <input
-          className={inputCls}
-          placeholder="Phone"
-          maxLength={20}
-          value={form.phone}
-          onChange={(e) => setForm({ ...form, phone: e.target.value })}
-        />
-        <input
-          className={inputCls}
-          placeholder="Email (optional)"
-          maxLength={255}
-          value={form.email}
-          onChange={(e) => setForm({ ...form, email: e.target.value })}
-        />
-        <textarea
-          className={inputCls}
-          rows={3}
-          placeholder="What do you need?"
-          maxLength={1000}
-          value={form.message}
-          onChange={(e) => setForm({ ...form, message: e.target.value })}
-        />
-        <Button variant="gold" className="w-full" disabled={busy} onClick={submit}>
-          Send enquiry
-        </Button>
-      </div>
+    <section className="mt-8 rounded-2xl border border-primary/30 bg-primary/[0.07] p-5 text-center">
+      <Handshake className="mx-auto h-5 w-5 text-primary" />
+      <h2 className="font-display mt-2 text-base font-semibold">
+        Connect with {card.display_name.split(" ")[0] || card.display_name}
+      </h2>
+      <p className="mt-1.5 text-xs text-muted-foreground">
+        Share your details back — it takes 20 seconds and needs no app or account.
+      </p>
+      <Button variant="gold" className="mt-4 w-full" onClick={onOpen}>
+        Exchange contact details
+      </Button>
     </section>
   );
 }
 
 function PublicCardPage() {
   const { slug } = Route.useParams();
+  const initial = Route.useLoaderData();
   const [qrOpen, setQrOpen] = useState(false);
+  const [connectOpen, setConnectOpen] = useState(false);
   const [layoutOverride, setLayoutOverride] = useState<string | null>(null);
   useEffect(() => {
     setLayoutOverride(new URLSearchParams(window.location.search).get("layout"));
@@ -222,10 +176,16 @@ function PublicCardPage() {
   const { data, isLoading } = useQuery({
     queryKey: ["public-card", slug],
     queryFn: () => fetchPublicCard(slug),
+    initialData: initial ?? undefined,
   });
 
   useEffect(() => {
-    if (data?.card) void supabase.rpc("increment_card_view", { _slug: slug });
+    const id = data?.card?.id;
+    if (!id) return;
+    if (!onceThisSession(`glinkit:view:${slug}`)) return;
+    void supabase.rpc("increment_card_view", { _slug: slug });
+    void trackEvent(id, slug, "view");
+    if (resolveSource(slug) === "qr") void trackEvent(id, slug, "qr");
   }, [data?.card?.id, slug]);
 
   if (isLoading) {
