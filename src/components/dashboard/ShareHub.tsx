@@ -10,7 +10,8 @@ export function ShareHub({ slug, name }: { slug: string; name: string }) {
   const [showQr, setShowQr] = useState(false);
   const qrRef = useRef<HTMLDivElement | null>(null);
   // The permanent profile URL — QR codes and NFC tags must never encode a preview link.
-  const url = `${SITE_URL}/${slug}`;
+  const origin = typeof window === "undefined" ? SITE_URL : window.location.origin;
+  const url = `${origin}/${slug}`;
 
   const copy = async () => {
     await navigator.clipboard?.writeText(url);
