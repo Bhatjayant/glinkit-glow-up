@@ -281,6 +281,53 @@ export type Database = {
           },
         ]
       }
+      card_services: {
+        Row: {
+          card_id: string
+          created_at: string
+          cta_label: string
+          cta_url: string
+          description: string
+          id: string
+          image_url: string | null
+          sort_order: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          card_id: string
+          created_at?: string
+          cta_label?: string
+          cta_url?: string
+          description?: string
+          id?: string
+          image_url?: string | null
+          sort_order?: number
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          card_id?: string
+          created_at?: string
+          cta_label?: string
+          cta_url?: string
+          description?: string
+          id?: string
+          image_url?: string | null
+          sort_order?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "card_services_card_id_fkey"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "cards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cards: {
         Row: {
           about: string
@@ -301,9 +348,14 @@ export type Database = {
           layout: string
           logo_url: string | null
           maps_url: string | null
+          offer_mode: string
           owner_id: string
           phone: string | null
           photo_url: string | null
+          primary_cta: string
+          primary_cta_label: string
+          primary_cta_url: string
+          profile_type: string
           published: boolean
           section_order: Json
           seo_description: string
@@ -337,9 +389,14 @@ export type Database = {
           layout?: string
           logo_url?: string | null
           maps_url?: string | null
+          offer_mode?: string
           owner_id: string
           phone?: string | null
           photo_url?: string | null
+          primary_cta?: string
+          primary_cta_label?: string
+          primary_cta_url?: string
+          profile_type?: string
           published?: boolean
           section_order?: Json
           seo_description?: string
@@ -373,9 +430,14 @@ export type Database = {
           layout?: string
           logo_url?: string | null
           maps_url?: string | null
+          offer_mode?: string
           owner_id?: string
           phone?: string | null
           photo_url?: string | null
+          primary_cta?: string
+          primary_cta_label?: string
+          primary_cta_url?: string
+          profile_type?: string
           published?: boolean
           section_order?: Json
           seo_description?: string

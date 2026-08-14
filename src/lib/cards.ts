@@ -31,6 +31,11 @@ export type Card = {
   booking_note?: string | null;
   booking_duration?: number | null;
   booking_slots?: string | null;
+  profile_type?: string | null;
+  primary_cta?: string | null;
+  primary_cta_label?: string | null;
+  primary_cta_url?: string | null;
+  offer_mode?: string | null;
 };
 
 export type Booking = {
@@ -89,6 +94,17 @@ export type Media = {
   sort_order: number;
 };
 
+export type Service = {
+  id: string;
+  card_id: string;
+  title: string;
+  description: string;
+  image_url: string | null;
+  cta_label: string;
+  cta_url: string;
+  sort_order: number;
+};
+
 export const slugify = (value: string) =>
   value
     .toLowerCase()
@@ -121,7 +137,7 @@ export async function fetchPublicCard(slug: string) {
     .maybeSingle();
   if (error) throw error;
   if (!card) return null;
-  const [{ data: products }, { data: media }] = await Promise.all([
+  const [{ data: products }, { data: media }, { data: services }] = await Promise.all([
     supabase
       .from("card_products")
       .select("*")
@@ -132,11 +148,17 @@ export async function fetchPublicCard(slug: string) {
       .select("*")
       .eq("card_id", card.id)
       .order("sort_order", { ascending: true }),
+    supabase
+      .from("card_services")
+      .select("*")
+      .eq("card_id", card.id)
+      .order("sort_order", { ascending: true }),
   ]);
   return {
     card: card as Card,
     products: (products ?? []) as Product[],
     media: (media ?? []) as Media[],
+    services: (services ?? []) as Service[],
   };
 }
 
