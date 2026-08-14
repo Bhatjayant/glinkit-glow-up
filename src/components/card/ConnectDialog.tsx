@@ -104,9 +104,10 @@ export function ConnectDialog({
         {done ? (
           <div className="py-4 text-center">
             <CheckCircle2 className="mx-auto h-10 w-10 text-primary" />
-            <h2 className="font-display mt-3 text-lg font-semibold">Details shared</h2>
+            <h2 className="font-display mt-3 text-lg font-semibold">You're connected</h2>
             <p className="mt-1.5 text-sm text-muted-foreground">
-              {card.display_name} has your details and will get back to you shortly.
+              {card.display_name} now has your details and will get back to you shortly. Keep their
+              contact too.
             </p>
             <Button
               variant="gold"
@@ -127,10 +128,12 @@ export function ConnectDialog({
             <DialogHeader>
               <DialogTitle className="font-display flex items-center gap-2">
                 <Handshake className="h-4.5 w-4.5 text-primary" />
-                Connect with {card.display_name.split(" ")[0] || card.display_name}
+                Exchange contact details
               </DialogTitle>
               <DialogDescription>
-                Share your card back — no app or account needed.
+                Share your details and you'll have{" "}
+                {card.display_name.split(" ")[0] || card.display_name}'s contact too — no app or
+                sign-up needed.
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-3">
@@ -211,10 +214,10 @@ export function ConnectDialog({
               />
               <Button variant="gold" className="w-full" disabled={busy} onClick={submit}>
                 {busy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                {busy ? "Sending…" : "Share my details"}
+                {busy ? "Sharing…" : "Exchange details"}
               </Button>
               <p className="text-center text-[11px] text-muted-foreground">
-                Your details go only to {card.display_name}.
+                Your details go only to {card.display_name}. Never shared with anyone else.
               </p>
             </div>
           </>
