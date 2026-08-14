@@ -1,10 +1,11 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { QRCodeSVG } from "qrcode.react";
 import { BookingScheduler } from "@/components/card/BookingScheduler";
 import { ConnectDialog } from "@/components/card/ConnectDialog";
 import {
+  ArrowRight,
   BadgeCheck,
   Download,
   ExternalLink,
@@ -35,7 +36,16 @@ import { supabase } from "@/integrations/supabase/client";
 import { onceThisSession, resolveSource, trackEvent, type EventType } from "@/lib/analytics";
 import { SITE_URL } from "@/lib/site";
 import { backgroundCss, getCardBackground } from "@/lib/card-backgrounds";
-import { avatarRadius, getCardLayout, panelRadius } from "@/lib/card-layouts";
+import {
+  avatarRadius,
+  bodyPad,
+  getCardLayout,
+  nameClass,
+  panelRadius,
+  sectionGap,
+  type SectionKey,
+} from "@/lib/card-layouts";
+import { resolveCta } from "@/lib/profile";
 import {
   discountPct,
   fetchPublicCard,
@@ -82,9 +92,6 @@ export const Route = createFileRoute("/$slug")({
   component: PublicCardPage,
 });
 
-const inputCls =
-  "w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none focus:border-primary/60";
-
 function ActionTile({
   href,
   icon: Icon,
@@ -103,15 +110,15 @@ function ActionTile({
   const base = "group font-medium transition-all hover:-translate-y-0.5";
   const cls =
     shape === "circle"
-      ? `${base} flex flex-col items-center gap-2 text-center text-[11px]`
+      ? `${base} flex min-w-0 flex-col items-center gap-2 text-center text-[11px]`
       : shape === "pill"
-        ? `${base} flex items-center gap-2 rounded-full border border-primary/25 bg-primary/[0.06] px-3.5 py-2 text-xs hover:border-primary/60`
+        ? `${base} flex items-center gap-2 rounded-full border border-primary/25 bg-primary/[0.06] px-3.5 py-2.5 text-xs hover:border-primary/60`
         : shape === "list"
-          ? `${base} flex items-center gap-3 rounded-none border-b border-border/70 px-1 py-3 text-sm hover:translate-y-0 hover:border-primary/60`
-          : `${base} flex flex-col items-center gap-2 rounded-2xl border border-primary/20 bg-primary/[0.06] px-2 py-3 text-center text-[11px] hover:border-primary/60 hover:bg-primary/12 hover:shadow-[0_10px_24px_-14px_var(--primary)]`;
+          ? `${base} flex items-center gap-3 border-b border-border/70 px-1 py-3 text-sm hover:translate-y-0 hover:border-primary/60`
+          : `${base} flex min-w-0 flex-col items-center gap-2 rounded-2xl border border-primary/20 bg-primary/[0.06] px-2 py-3 text-center text-[11px] hover:border-primary/60 hover:bg-primary/12`;
   const iconCls =
     shape === "circle"
-      ? "grid h-12 w-12 place-items-center rounded-full border border-primary/35 bg-primary/12 text-primary shadow-[0_10px_22px_-16px_var(--primary)] transition-colors group-hover:bg-primary/25"
+      ? "grid h-12 w-12 place-items-center rounded-full border border-primary/35 bg-primary/12 text-primary transition-colors group-hover:bg-primary/25"
       : shape === "pill" || shape === "list"
         ? "grid h-7 w-7 shrink-0 place-items-center rounded-full bg-primary/15 text-primary"
         : "grid h-9 w-9 place-items-center rounded-full border border-primary/30 bg-primary/10 text-primary transition-colors group-hover:bg-primary/20";
@@ -120,7 +127,7 @@ function ActionTile({
       <span className={iconCls}>
         <Icon className={shape === "circle" ? "h-5 w-5" : "h-4 w-4"} />
       </span>
-      <span className="leading-none">{label}</span>
+      <span className="truncate leading-none">{label}</span>
     </>
   );
   return onClick ? (
@@ -146,23 +153,6 @@ function SectionHeading({ icon: Icon, children }: { icon?: typeof Phone; childre
   );
 }
 
-function ExchangeCta({ card, onOpen }: { card: Card; onOpen: () => void }) {
-  return (
-    <section className="mt-8 rounded-2xl border border-primary/30 bg-primary/[0.07] p-5 text-center">
-      <Handshake className="mx-auto h-5 w-5 text-primary" />
-      <h2 className="font-display mt-2 text-base font-semibold">
-        Connect with {card.display_name.split(" ")[0] || card.display_name}
-      </h2>
-      <p className="mt-1.5 text-xs text-muted-foreground">
-        Share your details back — it takes 20 seconds and needs no app or account.
-      </p>
-      <Button variant="gold" className="mt-4 w-full" onClick={onOpen}>
-        Exchange contact details
-      </Button>
-    </section>
-  );
-}
-
 function PublicCardPage() {
   const { slug } = Route.useParams();
   const initial = Route.useLoaderData();
@@ -173,6 +163,8 @@ function PublicCardPage() {
     setLayoutOverride(new URLSearchParams(window.location.search).get("layout"));
   }, []);
   const [lightbox, setLightbox] = useState<string | null>(null);
+  const bookingRef = useRef<HTMLDivElement | null>(null);
+  const offerRef = useRef<HTMLDivElement | null>(null);
   const { data, isLoading } = useQuery({
     queryKey: ["public-card", slug],
     queryFn: () => fetchPublicCard(slug),
@@ -189,11 +181,11 @@ function PublicCardPage() {
   }, [data?.card?.id, slug]);
 
   if (isLoading) {
-    return <div className="px-5 py-24 text-center text-sm text-muted-foreground">Loading card…</div>;
+    return <div className="px-5 py-24 text-center text-sm text-muted-foreground">Loading profile…</div>;
   }
   if (!data) throw notFound();
 
-  const { card, products, media } = data;
+  const { card, products, media, services } = data;
   const track = (type: EventType, label = "") => void trackEvent(card.id, slug, type, label);
   const images = media.filter((m) => m.kind === "image");
   const videos = media.filter((m) => m.kind === "youtube");
@@ -202,6 +194,12 @@ function PublicCardPage() {
   const highlights = media.filter((m) => m.kind === "highlight");
   const isLight = card.theme === "light";
   const L = getCardLayout(layoutOverride ?? card.layout);
+  const gap = sectionGap(L.density);
+  const offerMode = card.offer_mode ?? "both";
+  const showProducts = offerMode !== "services" && products.length > 0;
+  const showServices = offerMode !== "products" && services.length > 0;
+  const firstName = card.display_name.split(" ")[0] || card.display_name;
+
   const logo = card.logo_url ? (
     <img
       src={card.logo_url}
@@ -256,6 +254,366 @@ function PublicCardPage() {
     toast.success("Link copied");
   };
 
+  const cta = resolveCta(card);
+  const runCta = () => {
+    track("cta", cta.event);
+    if (cta.kind === "connect") return setConnectOpen(true);
+    if (cta.kind === "booking")
+      return bookingRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (cta.kind === "products")
+      return offerRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+  const ctaButton =
+    cta.kind === "link" ? (
+      <Button variant="gold" className="h-12 w-full text-[15px]" asChild>
+        <a href={cta.href} target="_blank" rel="noreferrer" onClick={() => track("cta", cta.event)}>
+          {cta.label} <ArrowRight className="ml-2 h-4 w-4" />
+        </a>
+      </Button>
+    ) : (
+      <Button variant="gold" className="h-12 w-full text-[15px]" onClick={runCta}>
+        {cta.label} <ArrowRight className="ml-2 h-4 w-4" />
+      </Button>
+    );
+
+  const identityBlock = (
+    <>
+      {card.headline?.trim() && (
+        <p className={`mt-4 text-[15px] leading-snug font-medium text-foreground ${L.align === "center" ? "text-center" : ""}`}>
+          {card.headline}
+        </p>
+      )}
+      {(card.short_bio?.trim() || card.tagline?.trim()) && (
+        <p
+          className={`mt-2 text-[13px] leading-relaxed text-muted-foreground ${L.align === "center" ? "text-center" : ""}`}
+        >
+          {card.short_bio?.trim() || card.tagline}
+        </p>
+      )}
+    </>
+  );
+
+  const secondary: { href: string; icon: typeof Phone; label: string; onTrack?: () => void }[] = [];
+  if (card.whatsapp)
+    secondary.push({
+      href: waLink(card.whatsapp, `Hi ${firstName}, I found your Glinkit profile.`),
+      icon: MessageCircle,
+      label: "WhatsApp",
+      onTrack: () => track("whatsapp"),
+    });
+  if (card.phone)
+    secondary.push({ href: `tel:${card.phone}`, icon: Phone, label: "Call", onTrack: () => track("call") });
+  if (card.email)
+    secondary.push({
+      href: `mailto:${card.email}`,
+      icon: Mail,
+      label: "Email",
+      onTrack: () => track("email"),
+    });
+
+  const utility: { href?: string; icon: typeof Phone; label: string; onClick?: () => void }[] = [];
+  if (card.maps_url || card.address)
+    utility.push({
+      href: card.maps_url ?? `https://maps.google.com/?q=${encodeURIComponent(card.address ?? "")}`,
+      icon: MapPin,
+      label: "Directions",
+    });
+  if (card.website) utility.push({ href: card.website, icon: Globe, label: "Website" });
+  utility.push({ icon: QrCode, label: "QR", onClick: () => setQrOpen(true) });
+  utility.push({ icon: Share2, label: "Share", onClick: share });
+
+  const sections: Partial<Record<SectionKey, React.ReactNode>> = {};
+
+  if (showServices)
+    sections.services = (
+      <section key="services" className={gap}>
+        <SectionHeading icon={Sparkles}>What I do</SectionHeading>
+        <ul className="mt-4 space-y-3">
+          {services.map((s) => (
+            <li
+              key={s.id}
+              className="overflow-hidden rounded-2xl border border-border bg-primary/[0.035] p-4 transition-colors hover:border-primary/40"
+            >
+              <div className="flex items-start gap-3">
+                {s.image_url && (
+                  <img
+                    src={s.image_url}
+                    alt={s.title}
+                    loading="lazy"
+                    className="h-14 w-14 shrink-0 rounded-xl border border-border object-cover"
+                  />
+                )}
+                <div className="min-w-0">
+                  <p className="font-display text-[15px] font-semibold">{s.title}</p>
+                  {s.description && (
+                    <p className="mt-1 text-[13px] leading-relaxed text-muted-foreground">
+                      {s.description}
+                    </p>
+                  )}
+                  {(s.cta_label || s.cta_url) && (
+                    <a
+                      href={s.cta_url || contactLink(`Hi ${firstName}, I'd like to know about ${s.title}.`) || "#"}
+                      target="_blank"
+                      rel="noreferrer"
+                      onClick={() => track("service_click", s.title)}
+                      className="mt-2.5 inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline"
+                    >
+                      {s.cta_label || "Know more"} <ArrowRight className="h-3.5 w-3.5" />
+                    </a>
+                  )}
+                </div>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </section>
+    );
+
+  if (highlights.length > 0)
+    sections.about = (
+      <div key="about">
+        <section className={gap}>
+          <SectionHeading icon={Sparkles}>Speciality</SectionHeading>
+          <ul className="mt-3 flex flex-wrap gap-2">
+            {highlights.map((h) => (
+              <li
+                key={h.id}
+                className="rounded-full border border-primary/30 bg-primary/[0.07] px-3 py-1.5 text-xs"
+              >
+                {h.title || h.url}
+              </li>
+            ))}
+          </ul>
+        </section>
+        {card.about && (
+          <section className={gap}>
+            <SectionHeading>About</SectionHeading>
+            <p className="mt-3 text-sm leading-relaxed whitespace-pre-line text-muted-foreground">
+              {card.about}
+            </p>
+          </section>
+        )}
+      </div>
+    );
+  else if (card.about)
+    sections.about = (
+      <section key="about" className={gap}>
+        <SectionHeading>About</SectionHeading>
+        <p className="mt-3 text-sm leading-relaxed whitespace-pre-line text-muted-foreground">
+          {card.about}
+        </p>
+      </section>
+    );
+
+  if (links.length > 0)
+    sections.links = (
+      <section key="links" className={gap}>
+        <SectionHeading icon={Link2}>Links</SectionHeading>
+        <div className="mt-3 grid gap-2">
+          {links.map((l) => (
+            <a
+              key={l.id}
+              href={l.url}
+              target="_blank"
+              rel="noreferrer"
+              onClick={() => track("social", l.title || l.url)}
+              className="flex items-center justify-between gap-3 rounded-xl border border-border bg-primary/[0.03] px-4 py-3 text-sm transition-colors hover:border-primary/50"
+            >
+              <span className="truncate">{l.title || l.url}</span>
+              <ExternalLink className="h-4 w-4 shrink-0 text-primary" />
+            </a>
+          ))}
+        </div>
+      </section>
+    );
+
+  if (showProducts)
+    sections.products = (
+      <section key="products" ref={offerRef} className={gap}>
+        <SectionHeading>{offerMode === "products" ? "What I offer" : "Products & offers"}</SectionHeading>
+        <ul className="mt-3 space-y-3">
+          {products.map((p) => {
+            const off = discountPct(p.mrp, p.offer_price);
+            return (
+              <li
+                key={p.id}
+                className="overflow-hidden rounded-2xl border border-border bg-primary/[0.03] p-4 transition-colors hover:border-primary/40"
+              >
+                {p.image_url && (
+                  <button
+                    type="button"
+                    onClick={() => setLightbox(p.image_url)}
+                    className="mb-3 block w-full"
+                  >
+                    <img
+                      src={p.image_url}
+                      alt={p.name}
+                      loading="lazy"
+                      className="h-40 w-full rounded-xl object-cover"
+                    />
+                  </button>
+                )}
+                <p className="font-display text-sm font-semibold">{p.name}</p>
+                {p.description && (
+                  <p className="mt-1 text-xs leading-relaxed whitespace-pre-line text-muted-foreground">
+                    {p.description}
+                  </p>
+                )}
+                <div className="mt-2 flex flex-wrap items-baseline gap-2">
+                  {p.offer_price != null && (
+                    <span className="font-display text-lg font-bold text-primary">
+                      {inr(p.offer_price)}
+                    </span>
+                  )}
+                  {p.mrp != null && (
+                    <span className="text-xs text-muted-foreground line-through">{inr(p.mrp)}</span>
+                  )}
+                  {off > 0 && (
+                    <span className="rounded-full border border-primary/40 px-2 py-0.5 text-[11px] text-primary">
+                      {off}% off
+                    </span>
+                  )}
+                </div>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {p.allow_buy &&
+                    (() => {
+                      const href = buyLink(p.name, p.offer_price ?? p.mrp);
+                      if (!href) return null;
+                      return (
+                        <Button size="sm" variant="gold" asChild>
+                          <a
+                            href={href}
+                            target="_blank"
+                            rel="noreferrer"
+                            onClick={() => {
+                              track("product_click", p.name);
+                              if (card.upi_id) track("payment", p.name);
+                            }}
+                          >
+                            Buy now
+                          </a>
+                        </Button>
+                      );
+                    })()}
+                  {p.allow_enquiry &&
+                    (() => {
+                      const href = contactLink(
+                        `Hi ${card.display_name}, I'd like to enquire about ${p.name}.`,
+                      );
+                      if (!href) return null;
+                      return (
+                        <Button size="sm" variant="goldOutline" asChild>
+                          <a
+                            href={href}
+                            target="_blank"
+                            rel="noreferrer"
+                            onClick={() => track("product_click", p.name)}
+                          >
+                            Enquire
+                          </a>
+                        </Button>
+                      );
+                    })()}
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+        <p className="mt-2 text-[11px] text-muted-foreground">
+          Payments go directly to {card.display_name}; the invoice is issued by them.
+        </p>
+      </section>
+    );
+
+  if (images.length > 0)
+    sections.gallery = (
+      <section key="gallery" className={gap}>
+        <SectionHeading>Gallery</SectionHeading>
+        <div className="mt-3 grid grid-cols-3 gap-2">
+          {images.map((m) => (
+            <button key={m.id} type="button" onClick={() => setLightbox(m.url)}>
+              <img
+                src={m.url}
+                alt={m.title || "Gallery image"}
+                loading="lazy"
+                className="aspect-square w-full rounded-xl border border-border object-cover transition-transform hover:scale-[1.03]"
+              />
+            </button>
+          ))}
+        </div>
+      </section>
+    );
+
+  if (videos.length > 0)
+    sections.videos = (
+      <section key="videos" className={`${gap} space-y-3`}>
+        <SectionHeading>Videos</SectionHeading>
+        {videos.map((m) => (
+          <a
+            key={m.id}
+            href={m.url}
+            target="_blank"
+            rel="noreferrer"
+            className="flex items-center gap-2 rounded-xl border border-border p-3 text-sm hover:border-primary/50"
+          >
+            <ExternalLink className="h-4 w-4 text-primary" />
+            {m.title || "Watch video"}
+          </a>
+        ))}
+      </section>
+    );
+
+  if (pdfs.length > 0)
+    sections.docs = (
+      <section key="docs" className={`${gap} space-y-3`}>
+        <SectionHeading>Brochures</SectionHeading>
+        {pdfs.map((m) => (
+          <a
+            key={m.id}
+            href={m.url}
+            target="_blank"
+            rel="noreferrer"
+            onClick={() => track("document", m.title || m.url)}
+            className="flex items-center gap-2 rounded-xl border border-border p-3 text-sm hover:border-primary/50"
+          >
+            <FileText className="h-4 w-4 text-primary" />
+            {m.title || "Download PDF"}
+          </a>
+        ))}
+      </section>
+    );
+
+  if (card.upi_id || card.bank_details)
+    sections.payments = (
+      <section key="payments" className={`${gap} rounded-2xl border border-primary/25 bg-primary/5 p-4`}>
+        <SectionHeading>Payments</SectionHeading>
+        {card.upi_id && (
+          <>
+            <p className="mt-2 text-sm">UPI: {card.upi_id}</p>
+            <Button variant="gold" size="sm" className="mt-3" asChild>
+              <a
+                href={upiPayUrl(card.upi_id, card.display_name, null, "Payment")}
+                onClick={() => track("payment")}
+              >
+                Pay via UPI
+              </a>
+            </Button>
+          </>
+        )}
+        {card.bank_details && (
+          <p className="mt-3 text-xs whitespace-pre-line text-muted-foreground">
+            {card.bank_details}
+          </p>
+        )}
+      </section>
+    );
+
+  sections.booking = (
+    <div key="booking" ref={bookingRef}>
+      <BookingScheduler card={card} slug={slug} />
+    </div>
+  );
+
   return (
     <div
       className={`relative min-h-screen ${isLight ? "card-theme-light" : ""}`}
@@ -271,7 +629,7 @@ function PublicCardPage() {
           }}
         />
       )}
-      <div className="relative mx-auto max-w-md px-4 pt-8 pb-32">
+      <div className="relative mx-auto max-w-md px-4 pt-6 pb-32 sm:max-w-lg sm:pt-10 lg:max-w-xl">
         <div className={`surface-panel overflow-hidden ${panelRadius(L.panel)}`}>
           {L.hero === "banner" && (
             <div className="relative h-36 overflow-hidden bg-gradient-to-br from-primary/35 via-primary/10 to-transparent">
@@ -297,7 +655,7 @@ function PublicCardPage() {
           )}
 
           {L.hero === "cover" && (
-            <div className="relative h-72 overflow-hidden">
+            <div className="relative h-64 overflow-hidden sm:h-72">
               {card.photo_url ? (
                 <img
                   src={card.photo_url}
@@ -313,12 +671,13 @@ function PublicCardPage() {
               {logo}
               {viewChip}
               <div className="absolute inset-x-5 bottom-4">
-                <h1 className="font-display flex items-center gap-1.5 text-2xl font-bold drop-shadow">
-                  {card.display_name}
+                <h1 className={`${nameClass(L.nameType)} flex items-center gap-1.5 drop-shadow`}>
+                  <span className="truncate">{card.display_name}</span>
                   <BadgeCheck className="h-4.5 w-4.5 shrink-0 text-primary" />
                 </h1>
-                {card.job_title && <p className="text-sm text-primary">{card.job_title}</p>}
-                {card.company && <p className="text-xs text-muted-foreground">{card.company}</p>}
+                <p className="mt-0.5 text-[13px] text-primary">
+                  {[card.job_title, card.company].filter((v) => v?.trim()).join(" • ")}
+                </p>
               </div>
             </div>
           )}
@@ -326,7 +685,7 @@ function PublicCardPage() {
           {L.hero === "ticket" && (
             <div className="relative border-b border-dashed border-primary/40 bg-primary/[0.07] py-4 text-center">
               <p className="font-display text-[10px] tracking-[0.32em] uppercase text-primary">
-                Digital visiting card
+                Professional identity
               </p>
               {viewChip}
               <span
@@ -340,7 +699,7 @@ function PublicCardPage() {
             </div>
           )}
 
-          <div className={`px-6 pb-6 ${L.hero === "banner" || L.hero === "cover" ? "" : "pt-6"}`}>
+          <div className={`${bodyPad(L.density)} ${L.hero === "banner" || L.hero === "cover" ? "" : "pt-6"}`}>
             {L.hero === "split" ? (
               <div className="flex items-start gap-4">
                 <div
@@ -359,18 +718,16 @@ function PublicCardPage() {
                   )}
                 </div>
                 <div className="min-w-0">
-                  <h1 className="font-display flex items-center gap-1.5 text-xl font-bold">
-                    {card.display_name}
+                  <h1 className={`${nameClass(L.nameType)} flex items-center gap-1.5`}>
+                    <span className="truncate">{card.display_name}</span>
                     <BadgeCheck className="h-4 w-4 shrink-0 text-primary" />
                   </h1>
                   {card.job_title && (
-                    <p className="text-[13px] tracking-wide text-primary uppercase">
+                    <p className="text-[12px] tracking-wide text-primary uppercase">
                       {card.job_title}
                     </p>
                   )}
-                  {card.company && (
-                    <p className="text-sm text-muted-foreground">{card.company}</p>
-                  )}
+                  {card.company && <p className="text-sm text-muted-foreground">{card.company}</p>}
                   <div className="mt-2 flex items-center gap-2 text-[10px] text-muted-foreground">
                     <Eye className="h-3 w-3 text-primary" /> {card.view_count + 1} views
                   </div>
@@ -379,17 +736,15 @@ function PublicCardPage() {
             ) : L.hero === "mono" ? (
               <div>
                 <div className="flex items-center justify-between gap-3">
-                  <span className="font-display text-[10px] tracking-[0.3em] uppercase text-primary">
-                    {card.company || "Visiting card"}
+                  <span className="font-display truncate text-[10px] tracking-[0.3em] uppercase text-primary">
+                    {card.company || "Professional identity"}
                   </span>
-                  <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                  <span className="flex shrink-0 items-center gap-1 text-[10px] text-muted-foreground">
                     <Eye className="h-3 w-3 text-primary" /> {card.view_count + 1}
                   </span>
                 </div>
                 <span aria-hidden className="mt-3 block h-px w-full bg-primary/30" />
-                <h1 className="font-display mt-4 text-3xl leading-tight font-bold tracking-tight">
-                  {card.display_name}
-                </h1>
+                <h1 className={`${nameClass(L.nameType)} mt-4`}>{card.display_name}</h1>
                 {card.job_title && (
                   <p className="mt-1 text-xs tracking-[0.18em] uppercase text-muted-foreground">
                     {card.job_title}
@@ -416,388 +771,114 @@ function PublicCardPage() {
                 </div>
 
                 <h1
-                  className={`font-display flex items-center gap-1.5 text-2xl font-bold ${L.align === "center" ? "justify-center" : ""}`}
+                  className={`${nameClass(L.nameType)} flex items-center gap-1.5 ${L.align === "center" ? "justify-center" : ""}`}
                 >
-                  {card.display_name}
+                  <span className="truncate">{card.display_name}</span>
                   <BadgeCheck className="h-4.5 w-4.5 shrink-0 text-primary" />
                 </h1>
-                {card.job_title && <p className="mt-1 text-sm text-primary">{card.job_title}</p>}
-                {card.company && <p className="text-sm text-muted-foreground">{card.company}</p>}
+                <p
+                  className={`mt-1 text-[13px] text-primary ${L.align === "center" ? "" : ""}`}
+                >
+                  {[card.job_title, card.company].filter((v) => v?.trim()).join(" • ")}
+                </p>
               </div>
             )}
 
-            {card.tagline && (
-              <p
-                className={
-                  L.align === "center"
-                    ? "mt-3 text-center text-sm italic text-foreground/80"
-                    : "mt-3 border-l-2 border-primary/50 pl-3 text-sm italic text-foreground/80"
-                }
-              >
-                {card.tagline}
-              </p>
-            )}
-            {card.address && (
-              <p
-                className={`mt-3 flex items-start gap-1.5 text-xs text-muted-foreground ${L.align === "center" ? "justify-center text-center" : ""}`}
-              >
-                <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0" /> {card.address}
-              </p>
+            {identityBlock}
+
+            {/* Primary actions — never more than three on the first screen. */}
+            <div className={`mt-5 grid gap-2 ${L.ctaStyle === "banner" ? "rounded-2xl border border-primary/25 bg-primary/[0.06] p-3" : ""}`}>
+              {L.ctaStyle !== "quiet" && ctaButton}
+              <div className="grid grid-cols-2 gap-2">
+                <Button variant="goldOutline" className="h-11" onClick={saveContact}>
+                  <Download className="mr-1.5 h-4 w-4" /> Save contact
+                </Button>
+                <Button
+                  variant={L.ctaStyle === "quiet" ? "gold" : "goldOutline"}
+                  className="h-11"
+                  onClick={() => setConnectOpen(true)}
+                >
+                  <Handshake className="mr-1.5 h-4 w-4" /> Connect
+                </Button>
+              </div>
+              {L.ctaStyle === "quiet" && cta.kind !== "connect" && (
+                <button
+                  type="button"
+                  onClick={runCta}
+                  className="mt-0.5 inline-flex items-center justify-center gap-1.5 text-xs font-medium text-primary hover:underline"
+                >
+                  {cta.label} <ArrowRight className="h-3.5 w-3.5" />
+                </button>
+              )}
+            </div>
+
+            {secondary.length > 0 && (
+              <div className="mt-4 flex flex-wrap gap-2">
+                {secondary.map((s) => (
+                  <a
+                    key={s.label}
+                    href={s.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    onClick={s.onTrack}
+                    className="flex flex-1 basis-24 items-center justify-center gap-1.5 rounded-full border border-border bg-primary/[0.04] px-3 py-2.5 text-xs font-medium transition-colors hover:border-primary/50"
+                  >
+                    <s.icon className="h-3.5 w-3.5 text-primary" /> {s.label}
+                  </a>
+                ))}
+              </div>
             )}
 
             <div
               className={
                 L.tiles === "list"
-                  ? "mt-6 grid grid-cols-1"
+                  ? "mt-5 grid grid-cols-1"
                   : L.tiles === "pill"
-                    ? `mt-6 flex flex-wrap gap-2 ${L.align === "center" ? "justify-center" : ""}`
-                    : "mt-6 grid grid-cols-4 gap-2.5"
+                    ? `mt-5 flex flex-wrap gap-2 ${L.align === "center" ? "justify-center" : ""}`
+                    : "mt-5 grid grid-cols-4 gap-2"
               }
             >
-              {card.phone && (
+              {utility.map((u) => (
                 <ActionTile
-                  href={`tel:${card.phone}`}
-                  icon={Phone}
-                  label="Call"
-                  shape={L.tiles}
-                  onTrack={() => track("call")}
-                />
-              )}
-              {card.whatsapp && (
-                <ActionTile
-                  href={waLink(card.whatsapp, `Hi ${card.display_name}, I saw your card.`)}
-                  icon={MessageCircle}
-                  label="WhatsApp"
-                  shape={L.tiles}
-                  onTrack={() => track("whatsapp")}
-                />
-              )}
-              {card.email && (
-                <ActionTile
-                  href={`mailto:${card.email}`}
-                  icon={Mail}
-                  label="Email"
-                  shape={L.tiles}
-                  onTrack={() => track("email")}
-                />
-              )}
-              {(card.maps_url || card.address) && (
-                <ActionTile
-                  href={
-                    card.maps_url ??
-                    `https://maps.google.com/?q=${encodeURIComponent(card.address ?? "")}`
-                  }
-                  icon={MapPin}
-                  label="Directions"
+                  key={u.label}
+                  href={u.href}
+                  onClick={u.onClick}
+                  icon={u.icon}
+                  label={u.label}
                   shape={L.tiles}
                 />
-              )}
-              {card.website && (
-                <ActionTile
-                  href={card.website}
-                  icon={Globe}
-                  label="Website"
-                  shape={L.tiles}
-                  onTrack={() => track("website")}
-                />
-              )}
-              <ActionTile
-                icon={QrCode}
-                label="QR code"
-                onClick={() => setQrOpen(true)}
-                shape={L.tiles}
-              />
-              <ActionTile icon={Share2} label="Share" onClick={share} shape={L.tiles} />
+              ))}
             </div>
 
-            <div className="mt-5 grid gap-2">
-              <Button variant="gold" className="w-full" onClick={saveContact}>
-                <Download className="mr-2 h-4 w-4" /> Save contact
-              </Button>
-              <Button
-                variant="goldOutline"
-                className="w-full"
-                onClick={() => setConnectOpen(true)}
-              >
-                <Handshake className="mr-2 h-4 w-4" /> Connect — share my details
-              </Button>
-            </div>
-            <p className="mt-1.5 text-center text-[11px] text-muted-foreground">
-              Save contact downloads a vCard straight into your phone contacts.
-            </p>
-
-            {(card.headline?.trim() || card.short_bio?.trim()) && (
-              <div className="mt-6 space-y-1.5 text-center">
-                {card.headline?.trim() && (
-                  <p className="font-display text-sm font-semibold text-primary">{card.headline}</p>
-                )}
-                {card.short_bio?.trim() && (
-                  <p className="text-xs leading-relaxed text-muted-foreground">{card.short_bio}</p>
-                )}
-              </div>
-            )}
-
-            {highlights.length > 0 && (
-              <section className="mt-8">
-                <SectionHeading icon={Sparkles}>What we do</SectionHeading>
-                <ul className="mt-3 flex flex-wrap gap-2">
-                  {highlights.map((h) => (
-                    <li
-                      key={h.id}
-                      className="rounded-full border border-primary/30 bg-primary/[0.07] px-3 py-1.5 text-xs"
-                    >
-                      {h.title || h.url}
-                    </li>
-                  ))}
-                </ul>
-              </section>
-            )}
-
-            {card.about && (
-              <section className="mt-8">
-                <SectionHeading>About</SectionHeading>
-                <p className="mt-3 text-sm leading-relaxed whitespace-pre-line text-muted-foreground">
-                  {card.about}
-                </p>
-              </section>
-            )}
-
-            {links.length > 0 && (
-              <section className="mt-8">
-                <SectionHeading icon={Link2}>Links</SectionHeading>
-                <div className="mt-3 grid gap-2">
-                  {links.map((l) => (
-                    <a
-                      key={l.id}
-                      href={l.url}
-                      target="_blank"
-                      rel="noreferrer"
-                      onClick={() => track("social", l.title || l.url)}
-                      className="flex items-center justify-between gap-3 rounded-xl border border-border bg-primary/[0.03] px-4 py-3 text-sm transition-colors hover:border-primary/50"
-                    >
-                      <span className="truncate">{l.title || l.url}</span>
-                      <ExternalLink className="h-4 w-4 shrink-0 text-primary" />
-                    </a>
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {products.length > 0 && (
-              <section className="mt-8">
-                <SectionHeading>Products & services</SectionHeading>
-                <ul className="mt-3 space-y-3">
-                  {products.map((p) => {
-                    const off = discountPct(p.mrp, p.offer_price);
-                    return (
-                      <li
-                        key={p.id}
-                        className="overflow-hidden rounded-2xl border border-border bg-primary/[0.03] p-4 transition-colors hover:border-primary/40"
-                      >
-                        {p.image_url && (
-                          <button
-                            type="button"
-                            onClick={() => setLightbox(p.image_url)}
-                            className="mb-3 block w-full"
-                          >
-                            <img
-                              src={p.image_url}
-                              alt={p.name}
-                              loading="lazy"
-                              className="h-40 w-full rounded-xl object-cover"
-                            />
-                          </button>
-                        )}
-                        <p className="font-display text-sm font-semibold">{p.name}</p>
-                        {p.description && (
-                          <p className="mt-1 text-xs leading-relaxed whitespace-pre-line text-muted-foreground">
-                            {p.description}
-                          </p>
-                        )}
-                        <div className="mt-2 flex flex-wrap items-baseline gap-2">
-                          {p.offer_price != null && (
-                            <span className="font-display text-lg font-bold text-primary">
-                              {inr(p.offer_price)}
-                            </span>
-                          )}
-                          {p.mrp != null && (
-                            <span className="text-xs text-muted-foreground line-through">
-                              {inr(p.mrp)}
-                            </span>
-                          )}
-                          {off > 0 && (
-                            <span className="rounded-full border border-primary/40 px-2 py-0.5 text-[11px] text-primary">
-                              {off}% off
-                            </span>
-                          )}
-                        </div>
-                        <div className="mt-3 flex flex-wrap gap-2">
-                          {p.allow_buy &&
-                            (() => {
-                              const href = buyLink(p.name, p.offer_price ?? p.mrp);
-                              if (!href) return null;
-                              return (
-                                <Button size="sm" variant="gold" asChild>
-                                  <a
-                                    href={href}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    onClick={() => {
-                                      track("product_click", p.name);
-                                      if (card.upi_id) track("payment", p.name);
-                                    }}
-                                  >
-                                    Buy now
-                                  </a>
-                                </Button>
-                              );
-                            })()}
-                          {p.allow_enquiry &&
-                            (() => {
-                              const href = contactLink(
-                                `Hi ${card.display_name}, I'd like to enquire about ${p.name}.`,
-                              );
-                              if (!href) return null;
-                              return (
-                                <Button size="sm" variant="goldOutline" asChild>
-                                  <a
-                                    href={href}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    onClick={() => track("product_click", p.name)}
-                                  >
-                                    Enquire
-                                  </a>
-                                </Button>
-                              );
-                            })()}
-                        </div>
-                      </li>
-                    );
-                  })}
-                </ul>
-                <p className="mt-2 text-[11px] text-muted-foreground">
-                  Payments go directly to {card.display_name}; the invoice is issued by them.
-                </p>
-              </section>
-            )}
-
-            {images.length > 0 && (
-              <section className="mt-8">
-                <SectionHeading>Gallery</SectionHeading>
-                <div className="mt-3 grid grid-cols-3 gap-2">
-                  {images.map((m) => (
-                    <button key={m.id} type="button" onClick={() => setLightbox(m.url)}>
-                      <img
-                        src={m.url}
-                        alt={m.title || "Gallery image"}
-                        loading="lazy"
-                        className="aspect-square w-full rounded-xl border border-border object-cover transition-transform hover:scale-[1.03]"
-                      />
-                    </button>
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {videos.length > 0 && (
-              <section className="mt-8 space-y-3">
-                <SectionHeading>Videos</SectionHeading>
-                {videos.map((m) => (
-                  <a
-                    key={m.id}
-                    href={m.url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex items-center gap-2 rounded-xl border border-border p-3 text-sm hover:border-primary/50"
-                  >
-                    <ExternalLink className="h-4 w-4 text-primary" />
-                    {m.title || "Watch video"}
-                  </a>
-                ))}
-              </section>
-            )}
-
-            {pdfs.length > 0 && (
-              <section className="mt-8 space-y-3">
-                <SectionHeading>Brochures</SectionHeading>
-                {pdfs.map((m) => (
-                  <a
-                    key={m.id}
-                    href={m.url}
-                    target="_blank"
-                    rel="noreferrer"
-                    onClick={() => track("document", m.title || m.url)}
-                    className="flex items-center gap-2 rounded-xl border border-border p-3 text-sm hover:border-primary/50"
-                  >
-                    <FileText className="h-4 w-4 text-primary" />
-                    {m.title || "Download PDF"}
-                  </a>
-                ))}
-              </section>
-            )}
-
-            {(card.upi_id || card.bank_details) && (
-              <section className="mt-8 rounded-2xl border border-primary/25 bg-primary/5 p-4">
-                <SectionHeading>Payments</SectionHeading>
-                {card.upi_id && (
-                  <>
-                    <p className="mt-2 text-sm">UPI: {card.upi_id}</p>
-                    <Button variant="gold" size="sm" className="mt-3" asChild>
-                      <a
-                        href={upiPayUrl(card.upi_id, card.display_name, null, "Payment")}
-                        onClick={() => track("payment")}
-                      >
-                        Pay via UPI
-                      </a>
-                    </Button>
-                  </>
-                )}
-                {card.bank_details && (
-                  <p className="mt-3 text-xs whitespace-pre-line text-muted-foreground">
-                    {card.bank_details}
-                  </p>
-                )}
-              </section>
-            )}
-
-            <BookingScheduler card={card} slug={slug} />
-
-            <ExchangeCta card={card} onOpen={() => setConnectOpen(true)} />
+            {L.order.map((key) => sections[key] ?? null)}
 
             <p className="mt-8 text-center text-[11px] text-muted-foreground">
-              Powered by <span className="text-primary">Glinkit</span> · Endless Opportunities
+              Powered by <span className="text-primary">Glinkit</span> · Create. Share. Connect.
             </p>
           </div>
         </div>
       </div>
 
       {/* sticky quick bar */}
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-primary/20 bg-background/85 px-4 py-3 backdrop-blur-md">
-        <div className="mx-auto flex max-w-md gap-2">
-          {card.phone && (
-            <Button variant="goldOutline" className="flex-1" asChild>
-              <a href={`tel:${card.phone}`} onClick={() => track("call")}>
-                <Phone className="mr-1.5 h-4 w-4" /> Call
-              </a>
-            </Button>
-          )}
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-primary/20 bg-background/85 px-3 py-2.5 backdrop-blur-md">
+        <div className="mx-auto flex max-w-md gap-2 sm:max-w-lg">
           {card.whatsapp && (
-            <Button variant="gold" className="flex-1" asChild>
+            <Button variant="goldOutline" className="h-11 flex-1 px-2" asChild>
               <a
-                href={waLink(card.whatsapp, `Hi ${card.display_name}, I saw your Glinkit card.`)}
+                href={waLink(card.whatsapp, `Hi ${firstName}, I saw your Glinkit profile.`)}
                 target="_blank"
                 rel="noreferrer"
                 onClick={() => track("whatsapp")}
               >
-                <MessageCircle className="mr-1.5 h-4 w-4" /> WhatsApp
+                <MessageCircle className="h-4 w-4 sm:mr-1.5" />
+                <span className="hidden sm:inline">WhatsApp</span>
               </a>
             </Button>
           )}
-          <Button variant="goldOutline" className="flex-1" onClick={saveContact}>
+          <Button variant="goldOutline" className="h-11 flex-1 px-2" onClick={saveContact}>
             <Download className="mr-1.5 h-4 w-4" /> Save
           </Button>
-          <Button variant="gold" className="flex-1" onClick={() => setConnectOpen(true)}>
+          <Button variant="gold" className="h-11 flex-[1.4] px-2" onClick={() => setConnectOpen(true)}>
             <Handshake className="mr-1.5 h-4 w-4" /> Connect
           </Button>
         </div>
@@ -814,15 +895,11 @@ function PublicCardPage() {
       <Dialog open={qrOpen} onOpenChange={setQrOpen}>
         <DialogContent className="max-w-xs">
           <DialogHeader>
-            <DialogTitle className="font-display">Scan to open this card</DialogTitle>
+            <DialogTitle className="font-display">Scan to open this profile</DialogTitle>
             <DialogDescription>Point any phone camera at the code.</DialogDescription>
           </DialogHeader>
           <div className="mx-auto rounded-2xl bg-white p-4">
-            <QRCodeSVG
-              value={typeof window === "undefined" ? "" : window.location.href}
-              size={200}
-              level="M"
-            />
+            <QRCodeSVG value={`${SITE_URL}/${slug}`} size={200} level="M" />
           </div>
           <Button variant="goldOutline" onClick={share}>
             <Share2 className="mr-2 h-4 w-4" /> Share link
