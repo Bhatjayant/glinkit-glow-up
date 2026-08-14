@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { QRCodeSVG } from "qrcode.react";
 import { BookingScheduler } from "@/components/card/BookingScheduler";
+import { ConnectDialog } from "@/components/card/ConnectDialog";
 import {
   BadgeCheck,
   Download,
@@ -10,6 +11,7 @@ import {
   Eye,
   FileText,
   Globe,
+  Handshake,
   Link2,
   Mail,
   MapPin,
@@ -21,7 +23,6 @@ import {
   X,
 } from "lucide-react";
 import { toast } from "sonner";
-import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -31,6 +32,8 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
+import { onceThisSession, resolveSource, trackEvent, type EventType } from "@/lib/analytics";
+import { SITE_URL } from "@/lib/site";
 import { backgroundCss, getCardBackground } from "@/lib/card-backgrounds";
 import { avatarRadius, getCardLayout, panelRadius } from "@/lib/card-layouts";
 import {
@@ -44,15 +47,36 @@ import {
 } from "@/lib/cards";
 
 export const Route = createFileRoute("/$slug")({
-  head: ({ params }) => {
-    const t = `${params.slug} — Digital visiting card | Glinkit`;
+  loader: ({ params }) => fetchPublicCard(params.slug),
+  head: ({ params, loaderData }) => {
+    const card = loaderData?.card;
+    const name = card?.display_name?.trim() || params.slug;
+    const role = [card?.job_title, card?.company].filter((v) => v?.trim()).join(" · ");
+    const t = role ? `${name} | ${role}` : `${name} | Glinkit profile`;
+    const desc =
+      card?.seo_description?.trim() ||
+      card?.headline?.trim() ||
+      card?.tagline?.trim() ||
+      `Connect with ${name} — save the contact, message on WhatsApp or share your details back.`;
+    const url = `${SITE_URL}/${params.slug}`;
+    const image = card?.photo_url?.startsWith("https://") ? card.photo_url : null;
     return {
       meta: [
         { title: t },
-        { name: "description", content: `Digital visiting card powered by Glinkit.` },
+        { name: "description", content: desc.slice(0, 155) },
         { property: "og:title", content: t },
-        { property: "og:description", content: "Digital visiting card powered by Glinkit." },
+        { property: "og:description", content: desc.slice(0, 155) },
+        { property: "og:type", content: "profile" },
+        { property: "og:url", content: url },
+        { name: "twitter:card", content: image ? "summary_large_image" : "summary" },
+        ...(image
+          ? [
+              { property: "og:image", content: image },
+              { name: "twitter:image", content: image },
+            ]
+          : []),
       ],
+      links: [{ rel: "canonical", href: url }],
     };
   },
   component: PublicCardPage,
@@ -60,13 +84,6 @@ export const Route = createFileRoute("/$slug")({
 
 const inputCls =
   "w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none focus:border-primary/60";
-
-const leadSchema = z.object({
-  name: z.string().trim().min(1, "Add your name").max(100),
-  phone: z.string().trim().max(20),
-  email: z.string().trim().max(255),
-  message: z.string().trim().max(1000),
-});
 
 function ActionTile({
   href,
@@ -109,7 +126,7 @@ function ActionTile({
       {inner}
     </button>
   ) : (
-    <a href={href} target="_blank" rel="noreferrer" className={cls}>
+    <a href={href} target="_blank" rel="noreferrer" className={cls} onClick={onTrack}>
       {inner}
     </a>
   );
