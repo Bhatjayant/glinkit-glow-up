@@ -308,6 +308,37 @@ function PublicCardPage() {
   rail.push({ label: "QR code", icon: QrCode, onClick: () => setQrOpen(true) });
   rail.push({ label: "Share", icon: Share2, onClick: share });
 
+  const railItem = (r: RailAction, size: string) => {
+    const cls = `grid ${size} place-items-center rounded-full border transition-all hover:-translate-y-0.5 ${
+      r.primary
+        ? "border-primary bg-primary text-primary-foreground"
+        : "border-primary/25 bg-primary/[0.08] text-primary hover:border-primary/60 hover:bg-primary/20"
+    }`;
+    return r.href ? (
+      <a
+        href={r.href}
+        target="_blank"
+        rel="noreferrer"
+        title={r.label}
+        aria-label={r.label}
+        onClick={r.onClick}
+        className={cls}
+      >
+        <r.icon className="h-4.5 w-4.5" />
+      </a>
+    ) : (
+      <button
+        type="button"
+        title={r.label}
+        aria-label={r.label}
+        onClick={r.onClick}
+        className={cls}
+      >
+        <r.icon className="h-4.5 w-4.5" />
+      </button>
+    );
+  };
+
   const sections: Partial<Record<SectionKey, React.ReactNode>> = {};
 
   if (showServices)
@@ -626,7 +657,19 @@ function PublicCardPage() {
           }}
         />
       )}
-      <div className="relative mx-auto max-w-md pt-6 pr-4 pb-16 pl-16 sm:max-w-lg sm:pt-10 sm:pl-20 lg:max-w-xl">
+      <div className="relative mx-auto max-w-md px-3 pt-6 pb-16 sm:max-w-2xl sm:px-6 sm:pt-10">
+        {/* The DVC itself: one self-contained card. Actions live inside this boundary. */}
+        <div className="rounded-[28px] border border-primary/20 bg-background/35 p-2 shadow-[0_40px_90px_-45px_var(--primary)] backdrop-blur-sm sm:p-3">
+          <div className="flex items-start gap-2 sm:gap-3">
+            {/* Desktop action rail — part of the card, sticky within its own boundary. */}
+            <nav aria-label="Ways to connect" className="hidden shrink-0 sm:block">
+              <ul className="sticky top-4 flex flex-col gap-1.5 rounded-full border border-primary/25 bg-background/70 p-1.5">
+                {rail.map((r) => (
+                  <li key={r.label}>{railItem(r, "h-11 w-11")}</li>
+                ))}
+              </ul>
+            </nav>
+            <div className="min-w-0 flex-1">
         <div className={`surface-panel overflow-hidden ${panelRadius(L.panel)}`}>
           {L.hero === "banner" && (
             <div className="relative h-36 overflow-hidden bg-gradient-to-br from-primary/35 via-primary/10 to-transparent">
@@ -805,9 +848,14 @@ function PublicCardPage() {
               )}
             </div>
 
-            <p className="mt-4 text-[11px] text-muted-foreground">
-              Use the side bar to WhatsApp, call, email or share this profile.
-            </p>
+            {/* Mobile: in-card compact action row (no external rail). */}
+            <nav aria-label="Ways to connect" className="mt-4 sm:hidden">
+              <ul className="-mx-1 flex flex-wrap gap-2 px-1">
+                {rail.map((r) => (
+                  <li key={r.label}>{railItem(r, "h-10 w-10")}</li>
+                ))}
+              </ul>
+            </nav>
 
             {L.order.map((key) => sections[key] ?? null)}
 
@@ -816,50 +864,10 @@ function PublicCardPage() {
             </p>
           </div>
         </div>
+            </div>
+          </div>
+        </div>
       </div>
-
-      {/* One floating rail on the left — every way to connect, on every scroll position. */}
-      <nav
-        aria-label="Ways to connect"
-        className="fixed top-1/2 left-1.5 z-40 -translate-y-1/2 sm:left-3"
-      >
-        <ul className="flex flex-col gap-1.5 rounded-full border border-primary/25 bg-background/85 p-1.5 shadow-[0_18px_44px_-24px_var(--primary)] backdrop-blur-md">
-          {rail.map((r) => {
-            const cls = `grid h-10 w-10 place-items-center rounded-full border transition-all hover:-translate-y-0.5 sm:h-11 sm:w-11 ${
-              r.primary
-                ? "border-primary bg-primary text-primary-foreground"
-                : "border-primary/25 bg-primary/[0.08] text-primary hover:border-primary/60 hover:bg-primary/20"
-            }`;
-            return (
-              <li key={r.label}>
-                {r.href ? (
-                  <a
-                    href={r.href}
-                    target="_blank"
-                    rel="noreferrer"
-                    title={r.label}
-                    aria-label={r.label}
-                    onClick={r.onClick}
-                    className={cls}
-                  >
-                    <r.icon className="h-4.5 w-4.5" />
-                  </a>
-                ) : (
-                  <button
-                    type="button"
-                    title={r.label}
-                    aria-label={r.label}
-                    onClick={r.onClick}
-                    className={cls}
-                  >
-                    <r.icon className="h-4.5 w-4.5" />
-                  </button>
-                )}
-              </li>
-            );
-          })}
-        </ul>
-      </nav>
 
       <ConnectDialog
         card={card}
