@@ -97,55 +97,6 @@ export const Route = createFileRoute("/$slug")({
   component: PublicCardPage,
 });
 
-function ActionTile({
-  href,
-  icon: Icon,
-  label,
-  onClick,
-  onTrack,
-  shape = "tile",
-}: {
-  href?: string | undefined;
-  icon: typeof Phone;
-  label: string;
-  onClick?: (() => void) | undefined;
-  onTrack?: (() => void) | undefined;
-  shape?: "tile" | "circle" | "pill" | "list";
-}) {
-  const base = "group font-medium transition-all hover:-translate-y-0.5";
-  const cls =
-    shape === "circle"
-      ? `${base} flex min-w-0 flex-col items-center gap-2 text-center text-[11px]`
-      : shape === "pill"
-        ? `${base} flex items-center gap-2 rounded-full border border-primary/25 bg-primary/[0.06] px-3.5 py-2.5 text-xs hover:border-primary/60`
-        : shape === "list"
-          ? `${base} flex items-center gap-3 border-b border-border/70 px-1 py-3 text-sm hover:translate-y-0 hover:border-primary/60`
-          : `${base} flex min-w-0 flex-col items-center gap-2 rounded-2xl border border-primary/20 bg-primary/[0.06] px-2 py-3 text-center text-[11px] hover:border-primary/60 hover:bg-primary/12`;
-  const iconCls =
-    shape === "circle"
-      ? "grid h-12 w-12 place-items-center rounded-full border border-primary/35 bg-primary/12 text-primary transition-colors group-hover:bg-primary/25"
-      : shape === "pill" || shape === "list"
-        ? "grid h-7 w-7 shrink-0 place-items-center rounded-full bg-primary/15 text-primary"
-        : "grid h-9 w-9 place-items-center rounded-full border border-primary/30 bg-primary/10 text-primary transition-colors group-hover:bg-primary/20";
-  const inner = (
-    <>
-      <span className={iconCls}>
-        <Icon className={shape === "circle" ? "h-5 w-5" : "h-4 w-4"} />
-      </span>
-      <span className="truncate leading-none">{label}</span>
-    </>
-  );
-  return onClick ? (
-    <button type="button" onClick={onClick} className={cls}>
-      {inner}
-    </button>
-  ) : (
-    <a href={href} target="_blank" rel="noreferrer" className={cls} onClick={onTrack}>
-      {inner}
-    </a>
-  );
-}
-
 function SectionHeading({ icon: Icon, children }: { icon?: typeof Phone; children: string }) {
   return (
     <div className="flex items-center gap-2.5">
@@ -186,7 +137,9 @@ function PublicCardPage() {
   }, [data?.card?.id, slug]);
 
   if (isLoading) {
-    return <div className="px-5 py-24 text-center text-sm text-muted-foreground">Loading profile…</div>;
+    return (
+      <div className="px-5 py-24 text-center text-sm text-muted-foreground">Loading profile…</div>
+    );
   }
   if (!data) throw notFound();
 
@@ -240,9 +193,17 @@ function PublicCardPage() {
 
   const saveContact = () => {
     track("save_contact");
-    const blob = new Blob([vcard(card, links.map((l) => ({ url: l.url, title: l.title })))], {
-      type: "text/vcard",
-    });
+    const blob = new Blob(
+      [
+        vcard(
+          card,
+          links.map((l) => ({ url: l.url, title: l.title })),
+        ),
+      ],
+      {
+        type: "text/vcard",
+      },
+    );
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -291,7 +252,9 @@ function PublicCardPage() {
   const identityBlock = (
     <>
       {card.headline?.trim() && (
-        <p className={`mt-4 text-[15px] leading-snug font-medium text-foreground ${L.align === "center" ? "text-center" : ""}`}>
+        <p
+          className={`mt-4 text-[15px] leading-snug font-medium text-foreground ${L.align === "center" ? "text-center" : ""}`}
+        >
           {card.headline}
         </p>
       )}
@@ -305,31 +268,45 @@ function PublicCardPage() {
     </>
   );
 
-  const secondary: { href: string; icon: typeof Phone; label: string; onTrack?: () => void }[] = [];
-  if (card.whatsapp)
-    secondary.push({
-      href: waLink(card.whatsapp, `Hi ${firstName}, I found your Glinkit profile.`),
-      icon: MessageCircle,
-      label: "WhatsApp",
-      onTrack: () => track("whatsapp"),
-    });
-  if (card.phone)
-    secondary.push({ href: `tel:${card.phone}`, icon: Phone, label: "Call", onTrack: () => track("call") });
-  if (card.email)
-    secondary.push({
-      href: `mailto:${card.email}`,
-      icon: Mail,
-      label: "Email",
-      onTrack: () => track("email"),
-    });
-
-  const utility: { href?: string; icon: typeof Phone; label: string; onClick?: () => void }[] = [];
+  // Single source of truth for every connect action — rendered once, in the floating rail.
+  type RailAction = {
+    label: string;
+    icon: typeof Phone;
+    href?: string;
+    onClick?: () => void;
+    primary?: boolean;
+  };
   const directions = mapsUrl(card);
   const website = externalUrl(card.website);
-  if (directions) utility.push({ href: directions, icon: MapPin, label: "Directions" });
-  if (website) utility.push({ href: website, icon: Globe, label: "Website" });
-  utility.push({ icon: QrCode, label: "QR", onClick: () => setQrOpen(true) });
-  utility.push({ icon: Share2, label: "Share", onClick: share });
+  const rail: RailAction[] = [
+    { label: "Connect", icon: Handshake, onClick: () => setConnectOpen(true), primary: true },
+  ];
+  if (card.whatsapp)
+    rail.push({
+      label: "WhatsApp",
+      icon: MessageCircle,
+      href: waLink(card.whatsapp, `Hi ${firstName}, I found your Glinkit profile.`),
+      onClick: () => track("whatsapp"),
+    });
+  if (card.phone)
+    rail.push({
+      label: "Call",
+      icon: Phone,
+      href: `tel:${card.phone}`,
+      onClick: () => track("call"),
+    });
+  if (card.email)
+    rail.push({
+      label: "Email",
+      icon: Mail,
+      href: `mailto:${card.email}`,
+      onClick: () => track("email"),
+    });
+  rail.push({ label: "Save contact", icon: Download, onClick: saveContact });
+  if (directions) rail.push({ label: "Directions", icon: MapPin, href: directions });
+  if (website) rail.push({ label: "Website", icon: Globe, href: website });
+  rail.push({ label: "QR code", icon: QrCode, onClick: () => setQrOpen(true) });
+  rail.push({ label: "Share", icon: Share2, onClick: share });
 
   const sections: Partial<Record<SectionKey, React.ReactNode>> = {};
 
@@ -343,40 +320,40 @@ function PublicCardPage() {
               externalUrl(s.cta_url) ||
               contactLink(`Hi ${firstName}, I'd like to know about ${s.title}.`);
             return (
-            <li
-              key={s.id}
-              className="overflow-hidden rounded-2xl border border-border bg-primary/[0.035] p-4 transition-colors hover:border-primary/40"
-            >
-              <div className="flex items-start gap-3">
-                {s.image_url && (
-                  <img
-                    src={s.image_url}
-                    alt={s.title}
-                    loading="lazy"
-                    className="h-14 w-14 shrink-0 rounded-xl border border-border object-cover"
-                  />
-                )}
-                <div className="min-w-0">
-                  <p className="font-display text-[15px] font-semibold">{s.title}</p>
-                  {s.description && (
-                    <p className="mt-1 text-[13px] leading-relaxed text-muted-foreground">
-                      {s.description}
-                    </p>
+              <li
+                key={s.id}
+                className="overflow-hidden rounded-2xl border border-border bg-primary/[0.035] p-4 transition-colors hover:border-primary/40"
+              >
+                <div className="flex items-start gap-3">
+                  {s.image_url && (
+                    <img
+                      src={s.image_url}
+                      alt={s.title}
+                      loading="lazy"
+                      className="h-14 w-14 shrink-0 rounded-xl border border-border object-cover"
+                    />
                   )}
-                  {sHref && (
-                    <a
-                      href={sHref}
-                      target="_blank"
-                      rel="noreferrer"
-                      onClick={() => track("service_click", s.title)}
-                      className="mt-2.5 inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline"
-                    >
-                      {s.cta_label || "Know more"} <ArrowRight className="h-3.5 w-3.5" />
-                    </a>
-                  )}
+                  <div className="min-w-0">
+                    <p className="font-display text-[15px] font-semibold">{s.title}</p>
+                    {s.description && (
+                      <p className="mt-1 text-[13px] leading-relaxed text-muted-foreground">
+                        {s.description}
+                      </p>
+                    )}
+                    {sHref && (
+                      <a
+                        href={sHref}
+                        target="_blank"
+                        rel="noreferrer"
+                        onClick={() => track("service_click", s.title)}
+                        className="mt-2.5 inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline"
+                      >
+                        {s.cta_label || "Know more"} <ArrowRight className="h-3.5 w-3.5" />
+                      </a>
+                    )}
+                  </div>
                 </div>
-              </div>
-            </li>
+              </li>
             );
           })}
         </ul>
@@ -424,19 +401,22 @@ function PublicCardPage() {
       <section key="links" className={gap}>
         <SectionHeading icon={Link2}>Links</SectionHeading>
         <div className="mt-3 grid gap-2">
-          {links.map((l) => externalUrl(l.url) && (
-            <a
-              key={l.id}
-              href={externalUrl(l.url)!}
-              target="_blank"
-              rel="noreferrer"
-              onClick={() => track("social", l.title || l.url)}
-              className="flex items-center justify-between gap-3 rounded-xl border border-border bg-primary/[0.03] px-4 py-3 text-sm transition-colors hover:border-primary/50"
-            >
-              <span className="truncate">{l.title || l.url}</span>
-              <ExternalLink className="h-4 w-4 shrink-0 text-primary" />
-            </a>
-          ))}
+          {links.map(
+            (l) =>
+              externalUrl(l.url) && (
+                <a
+                  key={l.id}
+                  href={externalUrl(l.url)!}
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={() => track("social", l.title || l.url)}
+                  className="flex items-center justify-between gap-3 rounded-xl border border-border bg-primary/[0.03] px-4 py-3 text-sm transition-colors hover:border-primary/50"
+                >
+                  <span className="truncate">{l.title || l.url}</span>
+                  <ExternalLink className="h-4 w-4 shrink-0 text-primary" />
+                </a>
+              ),
+          )}
         </div>
       </section>
     );
@@ -599,7 +579,10 @@ function PublicCardPage() {
 
   if (card.upi_id || card.bank_details)
     sections.payments = (
-      <section key="payments" className={`${gap} rounded-2xl border border-primary/25 bg-primary/5 p-4`}>
+      <section
+        key="payments"
+        className={`${gap} rounded-2xl border border-primary/25 bg-primary/5 p-4`}
+      >
         <SectionHeading>Payments</SectionHeading>
         {card.upi_id && (
           <>
@@ -643,7 +626,7 @@ function PublicCardPage() {
           }}
         />
       )}
-      <div className="relative mx-auto max-w-md px-4 pt-6 pb-32 sm:max-w-lg sm:pt-10 lg:max-w-xl">
+      <div className="relative mx-auto max-w-md pt-6 pr-4 pb-16 pl-16 sm:max-w-lg sm:pt-10 sm:pl-20 lg:max-w-xl">
         <div className={`surface-panel overflow-hidden ${panelRadius(L.panel)}`}>
           {L.hero === "banner" && (
             <div className="relative h-36 overflow-hidden bg-gradient-to-br from-primary/35 via-primary/10 to-transparent">
@@ -711,7 +694,9 @@ function PublicCardPage() {
             </div>
           )}
 
-          <div className={`${bodyPad(L.density)} ${L.hero === "banner" || L.hero === "cover" ? "" : "pt-6"}`}>
+          <div
+            className={`${bodyPad(L.density)} ${L.hero === "banner" || L.hero === "cover" ? "" : "pt-6"}`}
+          >
             {L.hero === "split" ? (
               <div className="flex items-start gap-4">
                 <div
@@ -784,9 +769,7 @@ function PublicCardPage() {
                   <span className="truncate">{card.display_name}</span>
                   {verified && <BadgeCheck className="h-4.5 w-4.5 shrink-0 text-primary" />}
                 </h1>
-                <p
-                  className={`mt-1 text-[13px] text-primary ${L.align === "center" ? "" : ""}`}
-                >
+                <p className={`mt-1 text-[13px] text-primary ${L.align === "center" ? "" : ""}`}>
                   {[card.job_title, card.company].filter((v) => v?.trim()).join(" • ")}
                 </p>
               </div>
@@ -795,7 +778,9 @@ function PublicCardPage() {
             {identityBlock}
 
             {/* Primary actions — never more than three on the first screen. */}
-            <div className={`mt-5 grid gap-2 ${L.ctaStyle === "banner" ? "rounded-2xl border border-primary/25 bg-primary/[0.06] p-3" : ""}`}>
+            <div
+              className={`mt-5 grid gap-2 ${L.ctaStyle === "banner" ? "rounded-2xl border border-primary/25 bg-primary/[0.06] p-3" : ""}`}
+            >
               {L.ctaStyle !== "quiet" && ctaButton}
               <div className="grid grid-cols-2 gap-2">
                 <Button variant="goldOutline" className="h-11" onClick={saveContact}>
@@ -820,43 +805,9 @@ function PublicCardPage() {
               )}
             </div>
 
-            {secondary.length > 0 && (
-              <div className="mt-4 flex flex-wrap gap-2">
-                {secondary.map((s) => (
-                  <a
-                    key={s.label}
-                    href={s.href}
-                    target="_blank"
-                    rel="noreferrer"
-                    onClick={s.onTrack}
-                    className="flex flex-1 basis-24 items-center justify-center gap-1.5 rounded-full border border-border bg-primary/[0.04] px-3 py-2.5 text-xs font-medium transition-colors hover:border-primary/50"
-                  >
-                    <s.icon className="h-3.5 w-3.5 text-primary" /> {s.label}
-                  </a>
-                ))}
-              </div>
-            )}
-
-            <div
-              className={
-                L.tiles === "list"
-                  ? "mt-5 grid grid-cols-1"
-                  : L.tiles === "pill"
-                    ? `mt-5 flex flex-wrap gap-2 ${L.align === "center" ? "justify-center" : ""}`
-                    : "mt-5 grid grid-cols-4 gap-2"
-              }
-            >
-              {utility.map((u) => (
-                <ActionTile
-                  key={u.label}
-                  href={u.href}
-                  onClick={u.onClick}
-                  icon={u.icon}
-                  label={u.label}
-                  shape={L.tiles}
-                />
-              ))}
-            </div>
+            <p className="mt-4 text-[11px] text-muted-foreground">
+              Use the side bar to WhatsApp, call, email or share this profile.
+            </p>
 
             {L.order.map((key) => sections[key] ?? null)}
 
@@ -867,30 +818,48 @@ function PublicCardPage() {
         </div>
       </div>
 
-      {/* sticky quick bar */}
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-primary/20 bg-background/85 px-3 py-2.5 backdrop-blur-md">
-        <div className="mx-auto flex max-w-md gap-2 sm:max-w-lg">
-          {card.whatsapp && (
-            <Button variant="goldOutline" className="h-11 flex-1 px-2" asChild>
-              <a
-                href={waLink(card.whatsapp, `Hi ${firstName}, I saw your Glinkit profile.`)}
-                target="_blank"
-                rel="noreferrer"
-                onClick={() => track("whatsapp")}
-              >
-                <MessageCircle className="h-4 w-4 sm:mr-1.5" />
-                <span className="hidden sm:inline">WhatsApp</span>
-              </a>
-            </Button>
-          )}
-          <Button variant="goldOutline" className="h-11 flex-1 px-2" onClick={saveContact}>
-            <Download className="mr-1.5 h-4 w-4" /> Save
-          </Button>
-          <Button variant="gold" className="h-11 flex-[1.4] px-2" onClick={() => setConnectOpen(true)}>
-            <Handshake className="mr-1.5 h-4 w-4" /> Connect
-          </Button>
-        </div>
-      </div>
+      {/* One floating rail on the left — every way to connect, on every scroll position. */}
+      <nav
+        aria-label="Ways to connect"
+        className="fixed top-1/2 left-1.5 z-40 -translate-y-1/2 sm:left-3"
+      >
+        <ul className="flex flex-col gap-1.5 rounded-full border border-primary/25 bg-background/85 p-1.5 shadow-[0_18px_44px_-24px_var(--primary)] backdrop-blur-md">
+          {rail.map((r) => {
+            const cls = `grid h-10 w-10 place-items-center rounded-full border transition-all hover:-translate-y-0.5 sm:h-11 sm:w-11 ${
+              r.primary
+                ? "border-primary bg-primary text-primary-foreground"
+                : "border-primary/25 bg-primary/[0.08] text-primary hover:border-primary/60 hover:bg-primary/20"
+            }`;
+            return (
+              <li key={r.label}>
+                {r.href ? (
+                  <a
+                    href={r.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    title={r.label}
+                    aria-label={r.label}
+                    onClick={r.onClick}
+                    className={cls}
+                  >
+                    <r.icon className="h-4.5 w-4.5" />
+                  </a>
+                ) : (
+                  <button
+                    type="button"
+                    title={r.label}
+                    aria-label={r.label}
+                    onClick={r.onClick}
+                    className={cls}
+                  >
+                    <r.icon className="h-4.5 w-4.5" />
+                  </button>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
 
       <ConnectDialog
         card={card}
