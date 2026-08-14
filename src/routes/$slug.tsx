@@ -226,27 +226,6 @@ function PublicCardPage() {
     toast.success("Link copied");
   };
 
-  const cta = resolveCta(card);
-  const runCta = () => {
-    track("cta", cta.event);
-    if (cta.kind === "connect") return setConnectOpen(true);
-    if (cta.kind === "booking")
-      return bookingRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-    if (cta.kind === "products")
-      return offerRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-  };
-  const ctaButton =
-    cta.kind === "link" ? (
-      <Button variant="gold" className="h-12 w-full text-[15px]" asChild>
-        <a href={cta.href} target="_blank" rel="noreferrer" onClick={() => track("cta", cta.event)}>
-          {cta.label} <ArrowRight className="ml-2 h-4 w-4" />
-        </a>
-      </Button>
-    ) : (
-      <Button variant="gold" className="h-12 w-full text-[15px]" onClick={runCta}>
-        {cta.label} <ArrowRight className="ml-2 h-4 w-4" />
-      </Button>
-    );
 
   const identityBlock = (
     <>
