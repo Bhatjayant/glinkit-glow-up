@@ -48,8 +48,10 @@ import {
 import { resolveCta } from "@/lib/profile";
 import {
   discountPct,
+  externalUrl,
   fetchPublicCard,
   inr,
+  mapsUrl,
   upiPayUrl,
   vcard,
   waLink,
@@ -61,13 +63,15 @@ export const Route = createFileRoute("/$slug")({
   head: ({ params, loaderData }) => {
     const card = loaderData?.card;
     const name = card?.display_name?.trim() || params.slug;
-    const role = [card?.job_title, card?.company].filter((v) => v?.trim()).join(" · ");
+    const role = [card?.job_title?.trim(), card?.company?.trim()].filter(Boolean).join(" · ");
     const t = role ? `${name} | ${role}` : `${name} | Glinkit profile`;
     const desc =
       card?.seo_description?.trim() ||
       card?.headline?.trim() ||
+      card?.short_bio?.trim() ||
       card?.tagline?.trim() ||
-      `Connect with ${name} — save the contact, message on WhatsApp or share your details back.`;
+      card?.about?.trim() ||
+      [name, role].filter(Boolean).join(" — ");
     const url = `${SITE_URL}/${params.slug}`;
     const image = card?.photo_url?.startsWith("https://") ? card.photo_url : null;
     return {
