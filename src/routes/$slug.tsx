@@ -2,6 +2,7 @@ import { createFileRoute, notFound } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { QRCodeSVG } from "qrcode.react";
+import { BookingScheduler } from "@/components/card/BookingScheduler";
 import {
   BadgeCheck,
   Download,
@@ -720,6 +721,8 @@ function PublicCardPage() {
                 )}
               </section>
             )}
+
+            <BookingScheduler card={card} />
 
             <LeadForm card={card} />
 

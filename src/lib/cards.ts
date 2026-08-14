@@ -24,7 +24,45 @@ export type Card = {
   theme?: string | null;
   bg_style?: string | null;
   layout?: string | null;
+  booking_enabled?: boolean | null;
+  booking_note?: string | null;
+  booking_duration?: number | null;
+  booking_slots?: string | null;
 };
+
+export type Booking = {
+  id: string;
+  card_id: string;
+  name: string;
+  phone: string;
+  email: string;
+  purpose: string;
+  slot_date: string;
+  slot_time: string;
+  status: string;
+  created_at: string;
+};
+
+export const parseSlots = (raw: string | null | undefined) =>
+  (raw ?? "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter((s) => /^\d{1,2}:\d{2}$/.test(s));
+
+export const prettyTime = (hhmm: string) => {
+  const [h = "0", m = "00"] = hhmm.split(":");
+  const hour = Number(h);
+  const suffix = hour >= 12 ? "PM" : "AM";
+  const h12 = hour % 12 === 0 ? 12 : hour % 12;
+  return `${h12}:${m} ${suffix}`;
+};
+
+export const prettyDate = (iso: string) =>
+  new Date(`${iso}T00:00:00`).toLocaleDateString("en-IN", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+  });
 
 export type Product = {
   id: string;

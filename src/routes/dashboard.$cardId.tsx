@@ -12,6 +12,7 @@ import { TemplateGallery } from "@/components/dashboard/TemplateGallery";
 import { BackgroundPicker } from "@/components/dashboard/BackgroundPicker";
 import { LayoutPicker } from "@/components/dashboard/LayoutPicker";
 import { AiImprove } from "@/components/dashboard/AiImprove";
+import { BookingManager } from "@/components/dashboard/BookingManager";
 import type { CardTemplate } from "@/lib/card-templates";
 
 export const Route = createFileRoute("/dashboard/$cardId")({
@@ -723,6 +724,8 @@ function EditCardPage() {
             )}
           </ul>
         </section>
+
+        <BookingManager card={form} enabled={Boolean(user)} />
       </div>
     </div>
   );
