@@ -120,7 +120,13 @@ export function resolveCta(card: Card): ResolvedCta {
   return { label, kind: "connect", event: "cta_connect" };
 }
 
-export type CompletionItem = { label: string; done: boolean; hint: string };
+export type CompletionTier = "essential" | "recommended" | "optional";
+export type CompletionItem = {
+  label: string;
+  done: boolean;
+  hint: string;
+  tier: CompletionTier;
+};
 
 export function profileCompletion(
   card: Card,
@@ -130,22 +136,36 @@ export function profileCompletion(
   const products = extras.products ?? [];
   const media = extras.media ?? [];
   const items: CompletionItem[] = [
-    { label: "Name & designation", done: Boolean(card.display_name?.trim() && card.job_title?.trim()), hint: "Visitors decide in 5 seconds — say who you are." },
-    { label: "Profile photo", done: Boolean(card.photo_url?.trim()), hint: "Photos lift contact saves noticeably." },
-    { label: "Professional headline", done: Boolean(card.headline?.trim()), hint: "One line on what you do best." },
-    { label: "Short introduction", done: Boolean(card.short_bio?.trim() || card.about?.trim()), hint: "Two lines of context build trust." },
-    { label: "WhatsApp number", done: Boolean(card.whatsapp?.trim()), hint: "Add WhatsApp to increase direct enquiries." },
-    { label: "Email or phone", done: Boolean(card.email?.trim() || card.phone?.trim()), hint: "Give a second way to reach you." },
-    { label: "What I do", done: services.length > 0, hint: "List 3 capabilities so visitors understand your value." },
-    { label: "Products or offers", done: products.length > 0, hint: "Showcase what people can buy or enquire about." },
-    { label: "Primary action", done: Boolean(card.primary_cta?.trim()), hint: "Pick the one thing you want visitors to do." },
-    { label: "Social & website links", done: media.some((m) => m.kind === "link") || Boolean(card.website?.trim()), hint: "Link your website and social profiles." },
-    { label: "Published", done: Boolean(card.published), hint: "Publish to make your Glinkit link live." },
+    // Essential — everything needed for a profile that works.
+    { tier: "essential", label: "Photo or logo", done: Boolean(card.photo_url?.trim() || card.logo_url?.trim()), hint: "A face or a logo makes the first screen trustworthy." },
+    { tier: "essential", label: "Name", done: Boolean(card.display_name?.trim()), hint: "Say who you are." },
+    { tier: "essential", label: "Designation or company", done: Boolean(card.job_title?.trim() || card.company?.trim()), hint: "One line of professional context." },
+    { tier: "essential", label: "A way to reach you", done: Boolean(card.whatsapp?.trim() || card.phone?.trim() || card.email?.trim()), hint: "Add WhatsApp, phone or email." },
+    { tier: "essential", label: "Primary action", done: Boolean(card.primary_cta?.trim()), hint: "Pick the one thing you want visitors to do." },
+    // Recommended — makes the profile persuasive.
+    { tier: "recommended", label: "Headline & short intro", done: Boolean(card.headline?.trim() && (card.short_bio?.trim() || card.about?.trim())), hint: "Visitors decide in five seconds." },
+    { tier: "recommended", label: "Services or products", done: services.length > 0 || products.length > 0, hint: "Show what people can buy or enquire about." },
+    { tier: "recommended", label: "Website & social links", done: media.some((m) => m.kind === "link") || Boolean(card.website?.trim()), hint: "Link your website and social profiles." },
+    { tier: "recommended", label: "Meeting slots", done: Boolean(card.booking_enabled), hint: "Let interested visitors book you without messaging first." },
+    // Optional — nice to have, never a problem when missing.
+    { tier: "optional", label: "Gallery or videos", done: media.some((m) => m.kind === "image" || m.kind === "youtube"), hint: "Show your work." },
+    { tier: "optional", label: "Brochures", done: media.some((m) => m.kind === "pdf"), hint: "Share a PDF visitors can download." },
+    { tier: "optional", label: "Payments", done: Boolean(card.upi_id?.trim() || card.bank_details?.trim()), hint: "Accept payments straight from your profile." },
   ];
-  const done = items.filter((i) => i.done).length;
+  const essential = items.filter((i) => i.tier === "essential");
+  const recommended = items.filter((i) => i.tier === "recommended");
+  const optional = items.filter((i) => i.tier === "optional");
+  // Percent is honest: only essential + recommended count towards "ready".
+  const scored = [...essential, ...recommended];
+  const done = scored.filter((i) => i.done).length;
   return {
     items,
-    percent: Math.round((done / items.length) * 100),
-    pending: items.filter((i) => !i.done),
+    essential,
+    recommended,
+    optional,
+    readyToPublish: essential.every((i) => i.done),
+    essentialPending: essential.filter((i) => !i.done),
+    percent: Math.round((done / scored.length) * 100),
+    pending: [...essential, ...recommended].filter((i) => !i.done),
   };
 }

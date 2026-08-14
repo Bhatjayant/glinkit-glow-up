@@ -61,12 +61,11 @@ export function AnalyticsPanel({ cardId }: { cardId: string }) {
     };
   }, [rows]);
 
-  const engagement =
-    (byType["view"] ?? 0) > 0
-      ? Math.round(
-          ((rows.length - (byType["view"] ?? 0)) / (byType["view"] ?? 1)) * 100,
-        )
-      : 0;
+  const views = byType["view"] ?? 0;
+  // Only show rates once there is enough traffic for them to mean anything.
+  const rate = (n: number) => (views >= 20 ? `${Math.round((n / views) * 1000) / 10}%` : null);
+  const saveRate = rate(byType["save_contact"] ?? 0);
+  const connectRate = rate(byType["connect"] ?? 0);
 
   return (
     <section className="surface-panel mt-6 rounded-2xl p-6">
@@ -91,11 +90,25 @@ export function AnalyticsPanel({ cardId }: { cardId: string }) {
                 <p className="text-[11px] text-muted-foreground">{h.label}</p>
               </div>
             ))}
-            <div className="rounded-xl border border-primary/20 bg-primary/[0.05] p-3">
-              <p className="font-display text-xl font-bold text-primary">{engagement}%</p>
-              <p className="text-[11px] text-muted-foreground">Engagement per view</p>
-            </div>
+            {saveRate && (
+              <div className="rounded-xl border border-primary/20 bg-primary/[0.05] p-3">
+                <p className="font-display text-xl font-bold text-primary">{saveRate}</p>
+                <p className="text-[11px] text-muted-foreground">Views that saved your contact</p>
+              </div>
+            )}
+            {connectRate && (
+              <div className="rounded-xl border border-primary/20 bg-primary/[0.05] p-3">
+                <p className="font-display text-xl font-bold text-primary">{connectRate}</p>
+                <p className="text-[11px] text-muted-foreground">Views that connected</p>
+              </div>
+            )}
           </div>
+          {views > 0 && views < 20 && (
+            <p className="mt-2 text-[11px] text-muted-foreground">
+              Conversion rates appear once you cross 20 profile views — until then the raw counts
+              above are the honest picture.
+            </p>
+          )}
 
           <p className="mt-6 mb-2 text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
             Last 14 days

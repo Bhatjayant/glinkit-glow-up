@@ -430,7 +430,7 @@ function PublicCardPage() {
   if (showProducts)
     sections.products = (
       <section key="products" ref={offerRef} className={gap}>
-        <SectionHeading>{offerMode === "products" ? "What I offer" : "Products & offers"}</SectionHeading>
+        <SectionHeading>What I offer</SectionHeading>
         <ul className="mt-3 space-y-3">
           {products.map((p) => {
             const off = discountPct(p.mrp, p.offer_price);

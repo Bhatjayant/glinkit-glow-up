@@ -20,6 +20,8 @@ import { ProfileGoal } from "@/components/dashboard/ProfileGoal";
 import { ServicesEditor, useServices } from "@/components/dashboard/ServicesEditor";
 import { CompletionCard } from "@/components/dashboard/CompletionCard";
 import { ShareHub } from "@/components/dashboard/ShareHub";
+import { SetupWizard } from "@/components/dashboard/SetupWizard";
+import { profileCompletion } from "@/lib/profile";
 import type { CardTemplate } from "@/lib/card-templates";
 
 export const Route = createFileRoute("/dashboard/$cardId")({
@@ -125,6 +127,7 @@ function EditCardPage() {
   const qc = useQueryClient();
   const [form, setForm] = useState<Card | null>(null);
   const [autoStatus, setAutoStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [wizardDismissed, setWizardDismissed] = useState(false);
   const dirtyRef = useRef(false);
 
   useEffect(() => {
@@ -387,6 +390,10 @@ function EditCardPage() {
     setAutoStatus("saving");
     setForm({ ...form, ...patch });
   };
+  const showWizard =
+    !wizardDismissed &&
+    !form.published &&
+    !profileCompletion(form, { products, media, services }).readyToPublish;
 
   return (
     <div className="glow-emerald px-5 py-12">
@@ -425,6 +432,16 @@ function EditCardPage() {
             </Button>
           </div>
         </div>
+
+        {showWizard && (
+          <SetupWizard
+            card={form}
+            onChange={(patch) => set(patch)}
+            publishing={save.isPending}
+            onPublish={() => save.mutate(true)}
+            onDismiss={() => setWizardDismissed(true)}
+          />
+        )}
 
         <TemplateGallery
           onApply={(t) => applyTemplate.mutate(t)}
