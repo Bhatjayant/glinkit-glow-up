@@ -308,6 +308,37 @@ function PublicCardPage() {
   rail.push({ label: "QR code", icon: QrCode, onClick: () => setQrOpen(true) });
   rail.push({ label: "Share", icon: Share2, onClick: share });
 
+  const railItem = (r: RailAction, size: string) => {
+    const cls = `grid ${size} place-items-center rounded-full border transition-all hover:-translate-y-0.5 ${
+      r.primary
+        ? "border-primary bg-primary text-primary-foreground"
+        : "border-primary/25 bg-primary/[0.08] text-primary hover:border-primary/60 hover:bg-primary/20"
+    }`;
+    return r.href ? (
+      <a
+        href={r.href}
+        target="_blank"
+        rel="noreferrer"
+        title={r.label}
+        aria-label={r.label}
+        onClick={r.onClick}
+        className={cls}
+      >
+        <r.icon className="h-4.5 w-4.5" />
+      </a>
+    ) : (
+      <button
+        type="button"
+        title={r.label}
+        aria-label={r.label}
+        onClick={r.onClick}
+        className={cls}
+      >
+        <r.icon className="h-4.5 w-4.5" />
+      </button>
+    );
+  };
+
   const sections: Partial<Record<SectionKey, React.ReactNode>> = {};
 
   if (showServices)
