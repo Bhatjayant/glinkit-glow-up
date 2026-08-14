@@ -305,31 +305,35 @@ function PublicCardPage() {
     </>
   );
 
-  const secondary: { href: string; icon: typeof Phone; label: string; onTrack?: () => void }[] = [];
-  if (card.whatsapp)
-    secondary.push({
-      href: waLink(card.whatsapp, `Hi ${firstName}, I found your Glinkit profile.`),
-      icon: MessageCircle,
-      label: "WhatsApp",
-      onTrack: () => track("whatsapp"),
-    });
-  if (card.phone)
-    secondary.push({ href: `tel:${card.phone}`, icon: Phone, label: "Call", onTrack: () => track("call") });
-  if (card.email)
-    secondary.push({
-      href: `mailto:${card.email}`,
-      icon: Mail,
-      label: "Email",
-      onTrack: () => track("email"),
-    });
-
-  const utility: { href?: string; icon: typeof Phone; label: string; onClick?: () => void }[] = [];
+  // Single source of truth for every connect action — rendered once, in the floating rail.
+  type RailAction = {
+    label: string;
+    icon: typeof Phone;
+    href?: string;
+    onClick?: () => void;
+    primary?: boolean;
+  };
   const directions = mapsUrl(card);
   const website = externalUrl(card.website);
-  if (directions) utility.push({ href: directions, icon: MapPin, label: "Directions" });
-  if (website) utility.push({ href: website, icon: Globe, label: "Website" });
-  utility.push({ icon: QrCode, label: "QR", onClick: () => setQrOpen(true) });
-  utility.push({ icon: Share2, label: "Share", onClick: share });
+  const rail: RailAction[] = [
+    { label: "Connect", icon: Handshake, onClick: () => setConnectOpen(true), primary: true },
+  ];
+  if (card.whatsapp)
+    rail.push({
+      label: "WhatsApp",
+      icon: MessageCircle,
+      href: waLink(card.whatsapp, `Hi ${firstName}, I found your Glinkit profile.`),
+      onClick: () => track("whatsapp"),
+    });
+  if (card.phone)
+    rail.push({ label: "Call", icon: Phone, href: `tel:${card.phone}`, onClick: () => track("call") });
+  if (card.email)
+    rail.push({ label: "Email", icon: Mail, href: `mailto:${card.email}`, onClick: () => track("email") });
+  rail.push({ label: "Save contact", icon: Download, onClick: saveContact });
+  if (directions) rail.push({ label: "Directions", icon: MapPin, href: directions });
+  if (website) rail.push({ label: "Website", icon: Globe, href: website });
+  rail.push({ label: "QR code", icon: QrCode, onClick: () => setQrOpen(true) });
+  rail.push({ label: "Share", icon: Share2, onClick: share });
 
   const sections: Partial<Record<SectionKey, React.ReactNode>> = {};
 
