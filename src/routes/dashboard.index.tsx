@@ -16,6 +16,8 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { slugify, type Card } from "@/lib/cards";
+import { GrowthPanel } from "@/components/dashboard/GrowthPanel";
+import { CompletionCard } from "@/components/dashboard/CompletionCard";
 import { STATUS_CLASSES, STATUS_LABELS, interestLabel, type Lead, type LeadStatus } from "@/lib/leads";
 import { SOURCE_LABELS, type TrafficSource } from "@/lib/analytics";
 
@@ -232,6 +234,27 @@ function DashboardPage() {
                     Leads & analytics
                   </Link>
                 </Button>
+              </div>
+            )}
+
+            {primary && (
+              <div className="grid gap-4 lg:grid-cols-2">
+                <GrowthPanel
+                  views={stats?.views ?? 0}
+                  saves={stats?.saves ?? 0}
+                  connects={stats?.connects ?? 0}
+                  leads={stats?.leads.length ?? 0}
+                  recommendation={
+                    (stats?.views ?? 0) < 20
+                      ? "Share your Glinkit link in your WhatsApp status and email signature — visibility comes before leads."
+                      : (stats?.connects ?? 0) === 0
+                        ? "Views are coming in but nobody is connecting. Sharpen your headline and set one clear primary action."
+                        : (stats?.leads.length ?? 0) > 0
+                          ? "You have live leads. Reply to the newest ones today and move them along in your CRM."
+                          : "Momentum is good. Add a booking slot so interested visitors can meet you without messaging first."
+                  }
+                />
+                <CompletionCard card={primary} compact />
               </div>
             )}
 
