@@ -724,6 +724,8 @@ function EditCardPage() {
             )}
           </ul>
         </section>
+
+        <BookingManager card={form} enabled={Boolean(user)} />
       </div>
     </div>
   );
